@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Login</title>
+
+	<!-- dipendenze interne -->
+	<!-- uso lo stile di symbols perche' tanto le pagine sono pressoche' identiche -->
+	<!-- TODO: magari da rivedere se va incluso in IE senza grid layout -->
+	<link rel="stylesheet" href="style/symbols.min.css" />
+	<link rel="stylesheet" href="style/common.css" />
+	<script src="js/base.js"></script>
+	<script src="js/LLWebServer.js"></script>
+
+	<style>
+		.content {
+			font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+		}
+	</style>
+
+	<script>
+		const LOGIN_LOGOUT_SUCCESS = "ok";
+
+		document.addEventListener("DOMContentLoaded", initPage);
+
+		function initPage() {
+			let res = LLWebServer.CheckSessionIsValid();
+			let isLogged = (res.result == LOGIN_LOGOUT_SUCCESS);
+			
+			let itemsList = document.querySelectorAll("[data-hide-if-logged]");
+			for (let key in itemsList) {
+				let item = itemsList[key];
+
+				if (item.nodeType !== Node.ELEMENT_NODE)
+					continue;
+
+				let hideIfLogged = LLWebServer.ParseBoolean(item.getAttribute("data-hide-if-logged"));
+				if (isLogged && hideIfLogged)
+					item.style.display = "none";
+				else
+					item.style.display = "";
+
+				if (!isLogged && !hideIfLogged)
+					item.style.display = "none";
+			}
+
+			showNavbarButtons(window.location.pathname, true);
+			showNavbarLogos();
+
+			let ctrl = getElement("passwordTxt");
+			ctrl.addEventListener("keydown", function (event) {
+				const KEY_ENTER = 13;
+				const KEY_TAB = 9;
+
+				// TODO supportare login da mobile
+				// if (event.keyCode === KEY_ENTER || (mobileOrTablet && event.keyCode === KEY_TAB)) {
+				if (event.keyCode === KEY_ENTER) {
+					doLogin();
+				}
+			});
+		}
+
+		function doLogin() {
+			let passwordTxtVal = getElement("passwordTxt").value;
+			if (!passwordTxtVal) {
+				showAlert("Password cannot be empty", ALERT_TYPE.WARNING);
+				return;
+			}
+
+			let res = LLWebServer.Login(passwordTxtVal);
+			if (res.result == LOGIN_LOGOUT_SUCCESS) {
+				showAlert("Login success", ALERT_TYPE.SUCCESS);
+				setTimeout(function() { location.reload() }, 2000);
+			}
+			else
+				showAlert("Login failed", ALERT_TYPE.ERROR);
+		}
+
+		function doLogout() {
+			let res = LLWebServer.Logout();
+			if (res.result == LOGIN_LOGOUT_SUCCESS) {
+				showAlert("Logout success", ALERT_TYPE.WARNING);
+				setTimeout(function() { location.reload() }, 2000);
+			}
+		}
+	</script>
+</head>
+<body>
+	<div class="flx-wrapper">
+		<div class="fill-height">
+			<div id="navigationBar">
+				<!-- qui vengono appesi i bottoni programmaticamente -->
+				<span id="headButtonContainer">
+				</span>
+
+				<!-- qui vengono appese immagini programmaticamente -->
+				<span id="customLogoArea">
+				</span>
+			</div>
+
+			<div class="alert" id="alert" style="display: none; margin: 10px 5px 0 5px;">
+				<span class="closebtn" onclick="hideAlert()">&times;</span>
+				<span id="alertTxt"></span>
+			</div>
+	
+			<div class="content">
+				<div class="box">
+					<!-- <p>
+						<label for="userName">Username:</label>
+						<input type="text" name="userName" id="userNameTxt">
+					</p> -->
+					<p data-hide-if-logged="true">
+						<label for="password" style="width: 75px; display: inline-block;">Password:</label>
+						<input type="password" name="password" id="passwordTxt">
+					</p>
+					<input class="btn" type="button" data-hide-if-logged="true" value="Login" onclick="doLogin()">
+
+					<p data-hide-if-logged="false">
+						<span style="font-size: 20px;">User logged in</span><br><br>
+						<input class="btn" type="button" value="Logout" onclick="doLogout()">
+					</p>
+				</div>
+		</div>
+	</div>
+</body>
+</html>
