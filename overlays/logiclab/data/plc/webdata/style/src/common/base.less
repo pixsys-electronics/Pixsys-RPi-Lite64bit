@@ -1,0 +1,233 @@
+@axel-color: #0677af;
+@axel-light-color: #c0d4e5;
+@header-color: @axel-color;
+@content-background: whitesmoke;
+@footer-color: whitesmoke;
+@font-family: Arial, Helvetica, sans-serif;
+
+.base-html-body {
+    margin: 0;
+    overflow: hidden;
+    height: 100%;
+}
+
+.base-footer {
+    border-top: 1px solid rgb(204, 204, 204);
+    background-color: @footer-color;
+}
+
+.base-header {
+    background-color: @header-color;
+}
+
+.base-wrapper {
+    display: grid;
+    grid-template-rows: 60px auto 60px;
+    height: 100%;
+}
+
+.base-button {
+    border-radius: 10px;
+    border: 1px solid slategrey;
+    background-color: rgba(219, 219, 219, 0.750);
+
+    &:hover {
+        cursor: pointer;
+        background-color: rgba(235, 235, 235, 0.900);
+    }
+
+    &.active {
+        background-color: #c9c9c9;
+        border: 2px solid #ddd;
+    }
+
+    &.disabled {
+        background-color: #9c9c9c;
+        border: 1px solid #808080;
+        cursor: default;
+
+        img {
+            opacity: 0.35;
+        }
+    }
+
+    img {
+        width: 36px;
+        height: 38px;
+    }
+
+    svg > * > path {
+        fill: #dfa170;
+
+        &.active {
+            fill: #389C66 !important;
+        }
+    }
+
+    // per eliminare il quadratino tratteggiato sui bottoni
+    &::-moz-focus-inner {
+        border: 0;
+    }
+}
+
+.header-button {
+    .base-button;
+    display: inline;
+    height: 55px;
+    width: 55px;
+    margin-top: 3px;
+    margin-left: 3px;
+}
+
+.web-server-title {
+    font-family: @font-family;
+    font-style: italic;
+    font-size: 20px;
+    // per allineare la scritta orizzontalmente alla fine del contenitore
+    margin-left: auto;
+    // per allineare la scritta verticalmente alla fine del contenitore
+    align-self: flex-end;
+    padding: 4px;
+    margin-right: 2px;
+    user-select: none;
+}
+
+.axel-logo {
+    width: 170px;
+    height: 46px;
+    padding: 4px;
+}
+
+.page-title {
+    font-family: @font-family;
+    color: white;
+    font-size: 20px;
+    text-transform: uppercase;
+}
+
+/* ------------- Toggle switch: https://www.w3schools.com/howto/howto_css_switch.asp ------------- */
+@switch-width: 48px;
+@switch-height: 26px;
+@toggle-distance-start-end: 2px;
+@toggle-switch-off-color: darkgrey;
+@toggle-switch-on-color: #FFD04E;
+
+/* The switch - the box around the slider */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: @switch-width;
+    height: @switch-height;
+
+    /* Hide default HTML checkbox */
+    input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+}
+
+/* The slider */
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: @toggle-switch-off-color;
+    transition: .3s;
+    border-radius: 34px;
+
+    &:before {
+        position: absolute;
+        content: "";
+        height: @switch-height - 2px;
+        width: @switch-width - 24px;
+        left: 1px;
+        bottom: 1px;
+        background-color: white;
+        transition: .3s;
+        border-radius: 50%;
+    }
+}
+
+input:checked + .slider {
+    background-color: @toggle-switch-on-color;
+}
+
+input:checked + .slider:before {
+    transform: translateX(22px);
+}
+
+
+// Status indicator. Spunto utilizzato: https://codepen.io/tbugai/pen/GJojI
+.led {
+	&.green:before {
+		.color-dot(#48B433);
+	}
+
+	&.red:before {
+		.color-dot(#E31C2F);
+	}
+
+	&:before {
+		.led-before;
+    }
+
+    &.blink {
+		animation: blinker 1.5s linear infinite;
+		animation-delay: 0.2s;
+    }
+
+    @keyframes blinker {
+        50% {
+            opacity: 0;
+        }
+    }
+}
+
+.color-dot(@color) {
+	background-color: @color;
+	border-color: darken((@color), 5%);
+	box-shadow: 0px 0px 1px 1px @color;
+}
+
+.led-before {
+	content: ' ';
+	display: inline-block;
+	width: 12px;
+	height: 12px;
+	margin-right: 5px;
+	border: 1px solid #000;
+	border-radius: 7px;
+}
+
+/* definizione dei margini (classi helper per settare i margin in fretta)*/
+.mt-xs{
+	margin-top: 5px;
+}
+
+.mt-s{
+	margin-top: 10px;
+}
+
+.mt-m{
+	margin-top: 20px;
+}
+
+.mt-l{
+	margin-top: 30px;
+}
+
+.mt-xl{
+	margin-top: 40px;
+}
+
+.base-navigation-bar() {
+	// ridefinisco altezza e colore per le pagine non grid layout
+    background-color: @axel-color;
+    height: 60px;
+    display: flex;
+    justify-content: space-between;
+}

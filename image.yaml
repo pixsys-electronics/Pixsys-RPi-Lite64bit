@@ -6,114 +6,81 @@
 {{- $timezone := or .timezone "Europe/Rome" -}}
 {{- $commit   := or .commit   "devel" -}}
 {{- $archive  := or .archive  (printf "debian-%s-%s.tgz" $suite $arch) -}}
-{{- $image    := or .image    (printf "%s_Rev.%s_%s.img" $flavour $commit $kernel) -}}
+{{- $image    := or .image    "wp830-1ad.img" -}}
 {{- $update   := or .update   (printf "%s_Update_Rev.%s_%s.tgz" $flavour $commit $kernel) -}}
 
 architecture: {{ $arch }}
 
 actions:
+  - action: download
+    url: https://downloads.raspberrypi.org/raspios_armhf/root.tar.xz
+    #url: https://downloads.raspberrypi.org/raspios_full_armhf/root.tar.xz
+    name: root
+    unpack: false
+
   - action: unpack
-    file: {{ $archive }}
-    compression: gz
+    origin: root
+    compression: xz
+
+
+#  - action: unpack
+#    file: root.tar.xz
+#    compression: xz
+
+  - action: download
+    url: https://downloads.raspberrypi.org/raspios_armhf/boot.tar.xz
+    #url: https://downloads.raspberrypi.org/raspios_full_armhf/boot.tar.xz
+    name: boot
+    unpack: true
+    compression: xz
 
   - action: overlay
-    description: add bootloader files
-    source: overlays/bootloader/{{ $board }}
+    origin: boot
+    destination: /boot
 
   - action: overlay
-    description: add kernel, dtb and modules
-    source: overlays/kernel/{{ $board }}/{{ $kernel }}
-
-  - action: overlay
-    description: script to control the front terminal panel
-    source: overlays/terminal/{{ $board }}
+    description: WP830 device specific file
+    source: overlays/wp830
 
   - action: overlay
     description: device specific data, with hooks for persisting it
     source: overlays/deviceinfo
 
   - action: overlay
-    description: script to configure board via udp broadcast
-    source: overlays/finder
-
-  - action: overlay
     description: hook for first boot actions via /etc/rc.local
     source: overlays/firstboot
-
-  - action: overlay
-    description: add mbusd
-    source: overlays/mbusd
-
-  - action: overlay
-    description: add authorized_keys for root
-    source: overlays/authorized_keys
-
-  - action: run
-    description: create pixsys user
-    chroot: true
-    script: scripts/pixsys.sh
-
-  - action: overlay
-    description: add pixsys portal
-    source: overlays/pixsysportal
-
-  - action: overlay
-    description: configuration for wifi hotspot
-    source: overlays/hostapd
-
-  - action: recipe
-    description: extra configuration
-    recipe: flavours/{{ $flavour }}.yaml
-
-  - action: run
-    description: set timezone
-    chroot: true
-    script: scripts/setup-timezone.sh "{{ $timezone }}"
-
-  - action: run
-    description: create /etc/pixsys.info
-    chroot: true
-    script: scripts/pixsys-info.sh "{{ $arch }}" "{{ $suite }}" "{{ $board }}" "{{ $flavour }}" "{{ $kernel }}" "{{ $commit }}"
-
-  - action: run
-    description: do not write systemd journal to disk
-    chroot: true
-    command: rm -rf /var/log/journal/
-
-  - action: pack
-    file: {{ $update }}
-    compression: gz
 
   - action: image-partition
     description: create a partitioned image
     imagename: {{ $image }}
-    imagesize: 2GB
+    imagesize: 8GB
     partitiontype: msdos
     mountpoints:
+      - mountpoint: /boot
+        partition: boot
+        options: [noatime]
       - mountpoint: /
-        partition: rootfs
-        options: [ noatime ]
-      - mountpoint: /data
-        partition: data
-        options: [ noatime ]
+        partition: root
+        options: [noatime]
     partitions:
-      - name: rootfs
+      - name: boot
+        fs: fat32
+        start: 1M
+        end: 256M
+        flags: [boot]
+      - name: root
         fs: ext4
-        start: 16M
-        end: 1GB
-        flags: [ boot ]
-      - name: data
-        fs: ext4
-        start: 1GB
+        start: 257M
         end: 100%
+
+  - action: run
+    description: Update PARTUUID
+    command: perl -i -pe "s{XXXXXXXX}{$(blkid -o export ${IMAGE}|grep PTUUID|cut -f2 -d=)}" ${ROOTDIR}/boot/cmdline.txt
 
   - action: filesystem-deploy
     description: deploying filesystem onto image
+    #setup-fstab: false
     setup-kernel-cmdline: false
-
-  - action: run
-    description: setup MLO and uboot.img
-    script: scripts/uboot.sh
 
   - action: run
     description: obtain a bitmap file for faster flashing
@@ -124,3 +91,4 @@ actions:
     description: compress the image
     postprocess: true
     command: xz -T 0 -f {{ $image }}
+

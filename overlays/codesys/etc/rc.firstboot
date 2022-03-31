@@ -1,0 +1,28 @@
+#!/bin/bash
+
+set -e
+
+# put BBB magic code into EEPROM
+printf '\xaa\x55\x33\xeeA335BNLT' > /sys/bus/i2c/devices/0-0050/eeprom
+
+# copy eth0 MAC address to EEPROM at byte 16
+tr -d : < /sys/class/net/eth0/address | \
+  dd of=/sys/bus/i2c/devices/0-0050/eeprom seek=1 bs=16
+
+# activate serial console on usb
+systemctl enable serial-getty@ttyGS0.service
+
+while true
+do
+  redis-cli set MAIN_PROGRAM codesyscontrol.bin >/dev/null 2>&1 && break
+  sleep .1
+done
+redis-cli BGSAVE
+
+rm -f /etc/ssh/ssh_host_*
+dpkg-reconfigure -fnoninteractive openssh-server
+
+# if we are booting on eMMC, activate Codesys runtime service
+if [ "$(findmnt / -o source -n)" == "/dev/mmcblk1p1" ]; then
+  systemctl enable codesyscontrol.service
+fi

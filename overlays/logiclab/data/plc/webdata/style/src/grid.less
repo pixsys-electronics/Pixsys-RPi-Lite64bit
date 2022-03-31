@@ -1,0 +1,150 @@
+// regole di base valide per tutte le pagine
+@import (reference) "common/base.less";
+
+@menu-color: whitesmoke;
+// su mobile il footer (logo e scritta) finisce in alto, quindi il menu deve avere lo stesso colore
+@menu-color-mobile: whitesmoke;
+@collapsed-menu-width: 260px;
+@collapsed-menu-color: whitesmoke;
+@grid-background: #e3e3e3;
+
+html, body {
+    .base-html-body;
+}
+
+.tabulator {
+    background-color: @grid-background;
+}
+
+.wrapper {
+    .base-wrapper;
+    grid-template-columns: minmax(200px, 1fr) 7fr;
+    grid-template-areas:
+        "h h"
+        "m g"
+        "f f";
+}
+
+.header {
+    grid-area: h;
+    .base-header;
+}
+
+.menu {
+    background-color: @menu-color;
+    grid-area: m;
+}
+
+.grid {
+    grid-area: g;
+    overflow-y: auto;
+}
+
+.footer {
+    grid-area: f;
+    .base-footer;
+}
+
+#menuIcon, .closebtn {
+    display: none;
+}
+
+#par-grid {
+    font-family: @font-family;
+}
+
+// importazione stile da LESS base
+.web-server-title {
+    .web-server-title;
+}
+
+.axel-logo {
+    .axel-logo;
+}
+
+.footer-content {
+    // per allineare orizzontalmente logo e scritta
+    display: flex;
+}
+
+// media queries per interfaccia responsive
+// TODO: per maggiore precisione usare https://gist.github.com/gokulkrishh/242e68d1ee94ad05f488
+@media screen and (max-width: 480px) {
+    .home-button {
+        display: none !important;
+    }
+
+    .wrapper {
+        grid-template-columns: 1fr 6fr;
+        // attenzione: il footer va al posto dell'header e vice versa!
+        grid-template-areas:
+            "m f"
+            "g g"
+            "h h";
+    }
+
+    // mostro icona per aprire il menu
+    #menuIcon {
+        display: block;
+        margin-top: 4px;
+        margin-left: 2px;
+    }
+
+    // collasso il menu normalmente visibile
+    .menu-container {
+        height: 100%;
+        width: 0;
+        position: fixed;
+        z-index: 1;
+        top: 0;
+        left: 0;
+        background-color: @collapsed-menu-color;
+        overflow-x: hidden;
+        transition: 0.4s;
+        padding-top: 60px;
+    }
+
+    .menu-container .closebtn {
+        position: absolute;
+        top: 0;
+        right: 10px;
+        font-size: 36px;
+        margin-left: 50px;
+        display: block;
+    }
+
+    .menu {
+        background-color: @menu-color-mobile;
+    }
+
+    // font tree menu per la pagina mobile
+    .file-list li a{
+        font-size: 22px;
+    }
+
+    .footer {
+        border: none;
+    }
+
+    .web-server-title {
+		// per mostrare la scritta su due righe metto la width limitata
+        width: 110px;
+        padding: 1px;
+    }
+}
+
+.menu-content {
+    padding-left: 10px;
+}
+
+.collapsed-menu-open {
+    width: @collapsed-menu-width;
+}
+
+.header-button {
+    .header-button;
+}
+
+#navigationBar {
+    .base-navigation-bar;
+}

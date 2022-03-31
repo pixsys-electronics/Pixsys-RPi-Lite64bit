@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Animation</title>
+
+    <!-- dipendenze interne -->
+    <link rel="stylesheet" href="style/animation.min.css" />
+    <script src="js/animation.js"></script>
+    <script src="js/base.js"></script>
+    <script src="js/LLWebServer.js"></script>
+</head>
+<body>
+    <div class="wrapper">
+        <div class="header">
+            <button class="header-button home-button" title="home" onclick="window.location = '../'">
+                <img src="/img/home.png" alt="home">
+            </button>
+        </div>
+
+        <div class="content">
+            <div class="col-elevator">
+                <div>
+                    <label style="font-size: 18px;">Elevator position:</label>
+                    <input class="position-indicator mt-xs" type="text" data-symbol-name="elevActualPosition" value="1000" readonly>
+                    <div class="buttons-container">
+                        <button class="elevator-button" data-hmi-position="1000">3</button>
+                        <button class="elevator-button" data-hmi-position="500">2</button>
+                        <button class="elevator-button" data-hmi-position="0">1</button>
+                    </div>
+                </div>
+                <div id="elevatorContainer" class="elevator-container">
+                    <div id="elevator" class="elevator"></div>
+                </div>
+            </div>
+            <div class="col-controls">
+                <span>
+                    <label for="elevatorChk">Enable elevator</label>
+                    <label class="switch">
+                    <input type="checkbox" id="elevatorChk">
+                    <span class="slider"></span>
+                </span>
+                <div>
+                    <label>Elevator speed:</label>
+                    <input type="text" data-symbol-name="2004" data-editable="true">
+                </div>
+                <div>
+                    <label>Elevator acceleration:</label>
+                    <input type="text" data-symbol-name="2000" data-editable="true">
+                </div>
+                <div>
+                    <label>Elevator deceleration:</label>
+                    <input type="text" data-symbol-name="2002" data-editable="true">
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <div class="footer-content">
+                <img class="axel-logo" src="img/LogoAxel.png">
+                <span class="web-server-title">Embedded Web Server</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

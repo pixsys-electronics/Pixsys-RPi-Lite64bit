@@ -1,0 +1,115 @@
+#! /bin/sh
+### BEGIN INIT INFO
+# Provides:          LLExec
+# Required-Start:    
+# Required-Stop:
+# Should-Start:      
+# X-Start-Before:    checkroot
+# Default-Start:     S
+# Default-Stop:
+# X-Interactive:     true
+# Short-Description: Starts LLExec daemon
+# Description:       Starts LLExec daemon.
+### END INIT INFO
+
+
+# il presente script e' stato testato con bash, dash, busybox
+# e' stato chiamato "LLExecDaemon" invece di "LLExec" poiche' con busybox la "pidof LLExec" ritornava il pid del presente script...
+
+# inserire qui il path dove risiede LLExec se necessario
+LLEXEC_DIR=/data/plc
+# settare a 1 per abilitare il core dump; il file di trace è invece sempre generato
+COREDUMP_ENABLE=0
+
+LLExecStart()
+{
+	# verifica se LLExec e' già in esecuzione, e' richiesto il comando pidof !
+	if pidof LLExec ; then
+		echo "LLExec already running !"
+		exit 1
+	fi
+	
+	if test "$COREDUMP_ENABLE" = "1" ; then
+		echo core_%e_%t > /proc/sys/kernel/core_pattern
+		ulimit -c unlimited
+	fi
+
+# LLSymbolsServer richiede la LD_LIBRARY_PATH=./
+	export LD_LIBRARY_PATH=./:/usr/local/lib:$LD_LIBRARY_PATH
+	
+	#./LLExec -daemon &
+	chrt -f 1 ./LLExec -daemon &
+}
+
+WaitProcessEnd()
+{
+	cnt=0
+	while test -e /proc/$1 -a $cnt -lt $2 ;	do
+		sleep 1
+		cnt=$((cnt + 1))
+	done
+	
+	! test -e /proc/$1
+}
+
+LLExecStop()
+{
+	timeout=15
+	
+	# ricava il PID di LLExec, e' richiesto il comando pidof !
+	pid=`pidof LLExec`
+	if test -z $pid ; then
+		echo "LLExec not running !"
+		exit 1
+	fi
+
+	# tentativo di arresto con SIGTERM (arresto soft)	
+	kill $pid
+	
+	if ! WaitProcessEnd $pid $timeout ; then
+		# arresto soft non riuscito, tenta con SIGQUIT (arresto forzato, gestito dal signal handler)	
+		echo "Failed to stop gracefully with SIGTERM, sending SIGQUIT ..."
+		kill -QUIT $pid
+		
+		if ! WaitProcessEnd $pid $timeout ; then
+			# anche l'arresto con SIGQUIT e' fallito, manda il SIGKILL, che deve terminarlo per forza (salvo blocco nel kernel)
+			echo "Failed to stop with SIGQUIT, sending SIGKILL ..."
+			kill -KILL $pid
+			
+			if ! WaitProcessEnd $pid $timeout ; then
+				# neanche SIGKILL ha funzionato: il processo e' bloccato nel kernel
+				echo "Failed to stop with SIGKILL !!! Can not stop LLExec"
+			fi
+		fi
+	fi
+}
+
+cd $LLEXEC_DIR
+
+DESC="LLExec PLC Runtime"
+
+case "$1" in
+	start)
+		echo -n "Starting $DESC: "
+		LLExecStart
+		echo "done."
+		;;
+	stop)
+		echo -n "Stopping $DESC: "
+		LLExecStop
+		echo "done."
+		;;
+	restart)
+		echo -n "Restarting $DESC: "
+		LLExecStop
+		sleep 1
+		LLExecStart
+		echo "done."
+		;;
+	*)
+		echo "Usage: LLExec {start|stop|restart}" >&2
+		exit 1
+		;;
+esac
+
+exit 0

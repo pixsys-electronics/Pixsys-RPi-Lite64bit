@@ -1,0 +1,17 @@
+#!/bin/busybox sh
+
+# CODESYS ID 1
+# RS232 ( Su plastica PLC: COM1 )
+ln -s /dev/ttyS2 /dev/ttyCOM0
+
+# CODESYS ID 2
+# RS485 ( Su plastica PLC: COM2 )
+ln -s /dev/ttyS4 /dev/ttyCOM1
+
+# CODESYS ID 3
+# TTL-BUS
+ln -s /dev/ttyS5 /dev/ttyCOM2
+
+# CODESYS ID 4
+# DEBUG
+ln -s /dev/ttyS0 /dev/ttyCOM3

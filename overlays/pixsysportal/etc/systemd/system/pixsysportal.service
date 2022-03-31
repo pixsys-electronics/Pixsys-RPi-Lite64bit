@@ -1,0 +1,11 @@
+[Unit]
+Description=Pixsys Portal service
+After=network.target
+
+[Service]
+WorkingDirectory=/data/PixsysPortal/linux-arm/
+ExecStart=/data/PixsysPortal/linux-arm/o20010.04 -c -n -w
+Restart=always
+
+[Install]
+WantedBy=basic.target

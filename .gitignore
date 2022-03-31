@@ -1,0 +1,12 @@
+/gocode/*
+*.swp
+/*.tar.xz
+/*.tar.bmap
+/*.log
+/*.img
+/*.img.xz
+/*.img.bmap
+/*.tgz
+/bb-kernel
+/u-boot
+/modules

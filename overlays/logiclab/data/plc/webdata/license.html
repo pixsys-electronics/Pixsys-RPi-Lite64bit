@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>License Manager</title>
+
+	<!-- dipendenze interne -->
+	<script src="js/LLWebServer.js"></script>
+	<script src="js/base.js"></script>
+	<link rel="stylesheet" href="style/common.css">
+
+	<style>
+		#prodTblMan, #prodTbl{
+			margin-top: 20px;
+		}
+
+		table.lic-tbl > * td {
+			border-bottom: 1px solid #ddd;
+		}
+
+		table.lic-tbl > * td:nth-child(-n+2) {
+			padding-right: 30px;
+		}
+
+		table.lic-tbl {
+			border-collapse: collapse;
+		}
+
+		table.lic-tbl > * .separator {
+			border-top: 2px solid gray;
+		}
+
+		.tab-head {
+			font-weight: bold;
+		}
+
+		.lic-tbl {
+			margin-left: auto;
+			margin-right: auto;
+		}
+
+		#hwIdVal {
+			font-size: 1em;
+		}
+
+		.lic-status {
+			text-transform: uppercase;
+		}
+
+		#manualModeDiv, #forgotPkeyDiv {
+			display: none;
+		}
+
+		.lic-status.ok:before {
+			background-color: #32CD32;
+			border-color: #2db92d;
+			box-shadow: 0px 0px 4px 1px #32CD32;
+		}
+
+		.lic-status.demo:before {
+			background-color: #FFFF00;
+			border-color: #e5e600;
+			box-shadow: 0px 0px 4px 1px #FFFF00;
+		}
+
+		.lic-status.no:before {
+			background-color: #FF0000;
+			border-color: #e60000;
+			box-shadow: 0px 0px 4px 1px #FF0000;
+		}
+
+		.lic-status.error:before {
+			background-color: darkred;
+			border-color: #720000;
+			box-shadow: 0px 0px 4px 1px darkred;
+		}
+
+		.lic-status.pending-restart:before {
+			background-color: darkblue;
+			border-color: #000072;
+			box-shadow: 0px 0px 4px 1px darkblue;
+		}
+
+		.lic-status:before {
+			content: ' ';
+			display: inline-block;
+			width: 7px;
+			height: 7px;
+			margin-right: 5px;
+			border: 1px solid #000;
+			border-radius: 5px;
+		}
+
+		.msg-error {
+			color: red;
+			animation: blinker 1.2s linear infinite;
+		}
+
+		@keyframes blinker {
+			50% {
+				opacity: 0;
+			}
+		}
+
+		.hw-id-box {
+			border: 1px solid darkgray;
+			border-radius: 5px;
+			padding-left: 10px;
+			display: flex;
+		}
+
+		.drop_file_zone {
+			background-color: #EEE;
+			border: #999 4px dashed;
+			width: 300px;
+			height: 165px;
+			font-size: 20px;
+			margin: 4px;
+			margin-top: 15px;
+			margin-left: auto;
+			margin-right: auto;
+			user-select: none;
+		}
+
+		#drag_upload_file p {
+			text-align: center;
+		}
+
+		#drag_upload_file #selectfile {
+			display: none;
+		}
+	</style>
+
+	<script>
+		var LICENSE_STATUS = {
+			NOT_OK: "licstatNotOk",				// accade quando la trial e' scaduta
+			OK: "licstatOk",
+			OK_EXTERNAL: "licstatOkExternal",	// licenza chiavetta
+			DEMO: "licstatDemo"
+		};
+
+		var ACTIVATION_SUCCESS = "ok";
+
+		var ALERT_MSG = {
+			ERR_P_KEY_FORMAT_NOT_VALID: "ERROR: Product key format is not valid.",
+			ERR_P_KEY_EMPTY: "ERROR: You must insert a product key to activate this product.",
+			ERR_REACH_AXEL_SERVER: "ERROR: could not reach Axel server.",
+			ERR_ACTIVATION: "ERROR: An error occurred during the activation. Please retry.",
+			ERR_PARSE_LIC_FILE: "ERROR: could not parse license file.",
+			ERR_FORMAT_LIC_FILE: "ERROR: license file not supported.",
+			GETTING_LIC_FROM_AXEL: "Getting the license key from Axel. Please wait...",
+			ERR_NO_TARG_INFO: "ERROR: Could not get target information. Check that the runtime is running.",
+			ERR_GET_PROD_LIST: "ERROR: Cannot get product list.",
+			RESTART: "Please restart the application."
+		}
+
+		// prodotti da esportare durante il download del file JSON di attivazione
+		var m_productsToExport = [];
+
+		// mappa globale con gli stati delle licenze per evitare di attivare nuovamente prodotti gia' attivi quando viene inserito il file di licenza
+		var m_licensesOk = {};
+
+		document.addEventListener("DOMContentLoaded", setPage);
+
+		// workaround per chiamare la funzione di init per INtime al posto di quella standard
+		function setPage() {
+			if (typeof initPage2 === "function")
+				initPage2();
+			else
+				initPage();
+		}
+
+		function initPage() {
+			let showNavBar = true;
+			let showNavBarParam = getUrlVars()["showNavBar"];
+			if (showNavBarParam !== undefined)
+				showNavBar = LLWebServer.ParseBoolean(showNavBarParam);
+
+			if (showNavBar) {
+				showNavbarButtons(window.location.pathname);
+				showNavbarLogos();
+			}
+			else
+				document.getElementById("navigationBar").style.display = "none";
+
+			getLicenseStatusForProd();
+
+			// nascondo il link per l'attivazione manuale se tutte le licenze sono attive
+			let allLicOk = true;
+			for (let key in m_licensesOk) {
+				let val = m_licensesOk[key];
+				if (val === false) {
+					allLicOk = false;
+					break;
+				}
+			}
+
+			if (allLicOk) {
+				document.getElementById("forgotShowLinkDiv").style.display = "none";
+				document.getElementById("offlineShowLinkDiv").style.display = "none";
+			}
+
+			showLoginStatus();
+		}
+
+		function getLicenseStatusForProd() {
+			let prodList = LLWebServer.GetProductList();
+			if (!prodList) {
+				showAlert(ALERT_MSG.ERR_GET_PROD_LIST, ALERT_TYPE.ERROR, -1);
+
+				let errorBox = document.createElement("div");
+				errorBox.className = 'box box-title';
+				errorBox.innerText = ALERT_MSG.ERR_GET_PROD_LIST;
+
+				let pageContentElem = document.getElementsByClassName("content")[0];
+				pageContentElem.appendChild(errorBox);
+
+				let autoModeDiv = document.getElementById("autoModeDiv");
+				autoModeDiv.style.display = "none";
+
+				return;
+			}
+
+			let prodTbl = document.getElementById("prodTbl").getElementsByTagName('tbody')[0];
+			// let prodTblMan = document.getElementById("prodTblMan").getElementsByTagName('tbody')[0];
+
+			const MISSING_HW_ID_ERR_MSG = "No hardware id found. Cannot activate.";
+
+			prodList.forEach(function(item) {
+				let prodName = item.name;
+
+				// check di sicurezza perche' il nome del prodotto serve per ottenere il suo stato di licenza
+				if (!prodName) return;
+
+				// ottengo lo stato della licenza per ogni prodotto
+				let licStatus = LLWebServer.GetLicenseStatus(prodName);
+				let licStatusOk = (licStatus.status !== undefined && licStatus.status !== "");
+
+				// ottengo l'hardware id per ogni prodotto
+				let hwIdOk = (licStatus.hwid !== undefined && licStatus.hwid !== "");
+
+				m_productsToExport.push(new Object({ "name": prodName, "hwid": licStatus.hwid, "license": null }));
+
+				// per nascondere i prodotti che verranno attivati in gruppo con un'unica product key
+				if (item.hidden) return;
+
+				// creo le tabelle per attivazione automatica e manuale (offline)
+				let newTr = document.createElement("tr");
+				// let newTrMan = document.createElement("tr");
+
+				let tdName = document.createElement("td");
+				let tdStatus = document.createElement("td");
+
+				let tdActivation = document.createElement("td");
+				// let tdActivationMan = document.createElement("td");
+
+				// stampa hw id nella sezione attivazione manuale (offline)
+				/*
+				let hwIdTxtMan = document.getElementById("hwIdVal");
+				hwIdTxtMan.value = hwIdOk ? licStatus.hwid : MISSING_HW_ID_ERR_MSG;
+				*/
+
+				let spanStatus = document.createElement("span");
+				spanStatus.classList.add("lic-status");
+
+				// non sono riuscito a reperire lo stato della licenza
+				if (!licStatusOk) {
+					spanStatus.classList.add("error");
+					spanStatus.innerText = "error getting status";
+				}
+				else {
+					// licenza attiva
+					if (licStatus.status == LICENSE_STATUS.OK_EXTERNAL || licStatus.status == LICENSE_STATUS.OK) {
+						spanStatus.classList.add("ok");
+						spanStatus.innerText = "OK";
+						tdActivation.innerText = "-";
+						tdActivation.style.textAlign = "center";
+						/*
+						tdActivationMan.innerText = "-";
+						tdActivationMan.style.textAlign = "center";
+						*/
+
+						m_licensesOk[prodName] = true;
+					}
+					else {
+						// licenza demo oppure non attivo
+						if (licStatus.status == LICENSE_STATUS.DEMO) {
+							spanStatus.classList.add("demo");
+							spanStatus.innerText = "demo";
+						}
+						else if (licStatus.status == LICENSE_STATUS.NOT_OK) {
+							spanStatus.classList.add("no");
+							spanStatus.innerText = "no license";
+						}
+
+						spanStatus.setAttribute("data-product-name", prodName);
+
+						// se sono riuscito a reperire l'hardware id per fare l'attivazione
+						if (hwIdOk) {
+							// per modalita' automatica
+							let pKeyTxt = document.createElement("input");
+							pKeyTxt.setAttribute("type", "text");
+							pKeyTxt.setAttribute("maxlength", 23);
+							pKeyTxt.setAttribute("placeholder", "Product key");
+							pKeyTxt.setAttribute("data-product-name", prodName);
+							pKeyTxt.setAttribute("data-product-hwid", licStatus.hwid);
+							pKeyTxt.style.width = "200px";
+
+							let btnActiv = document.createElement("button");
+							btnActiv.innerText = "Activate";
+							btnActiv.className = "btn";
+							btnActiv.onclick = function() {
+								getLicenseAndActivate(pKeyTxt);
+							};
+
+							// per modalita' manuale
+							/*
+							let licKeyTxt = document.createElement("input");
+							licKeyTxt.setAttribute("type", "text");
+							licKeyTxt.setAttribute("maxlength", 32);
+							licKeyTxt.setAttribute("placeholder", "License key");
+							licKeyTxt.setAttribute("data-product-name", prodName);
+							licKeyTxt.style.width = "240px";
+
+							let btnActivMan = document.createElement("button");
+							btnActivMan.innerText = "Activate";
+							btnActivMan.className = "btn";
+							btnActivMan.onclick = function() {
+								setKey(licKeyTxt);
+							};
+							*/
+
+							tdActivation.appendChild(pKeyTxt);
+							tdActivation.appendChild(btnActiv);
+
+							/*
+							tdActivationMan.appendChild(licKeyTxt);
+							tdActivationMan.appendChild(btnActivMan);
+							*/
+						}
+						else {
+							// comunico l'errore
+							let msgSpan = document.createElement('span');
+							msgSpan.classList.add('msg-error');
+							msgSpan.innerText = MISSING_HW_ID_ERR_MSG;
+
+							tdActivation.appendChild(msgSpan);
+							// tdActivationMan.appendChild(msgSpan.cloneNode(true));
+						}
+
+						m_licensesOk[prodName] = false;
+					}
+				}
+
+				tdName.innerText = prodName;
+				tdStatus.appendChild(spanStatus);
+
+				newTr.appendChild(tdName);
+				newTr.appendChild(tdStatus);
+				newTr.appendChild(tdActivation);
+
+				// clono i nodi per appendere gli stessi della modalita' auto
+				/*
+				newTrMan.appendChild(tdName.cloneNode(true));
+				newTrMan.appendChild(tdStatus.cloneNode(true));
+				newTrMan.appendChild(tdActivationMan);
+				*/
+
+				prodTbl.appendChild(newTr);
+				// prodTblMan.appendChild(newTrMan);
+			});
+		}
+
+		// ATTIVAZIONE ONLINE
+		function activateOnlineLicense(prodName, hwid, pKeyVal) {
+			// stringa di errore che viene mostrata come risultato complessivo dell'operazione
+			// e' un workaround per INtime fino al momento in cui il server non rispondera' con tutte le licenze a una unica richiesta
+			let errStr = "";
+			LLWebServer.GetLicense(prodName, hwid, pKeyVal, function (result) {
+				if (result) {
+					if (result.indexOf("####") != -1){
+						// showAlert("ERROR " + result, ALERT_TYPE.ERROR);
+
+						// se la stringa di errore non contiene gia' quel messaggio
+						if (errStr.indexOf(result) === -1)
+							errStr += result;
+
+						showResultMsg();
+						return;
+					}
+
+					let res = LLWebServer.RegisterLicense(prodName, result, true);
+
+					let msgSuccess = "Activation for " + prodName + " complete. " + ALERT_MSG.RESTART;
+					if (typeof LLWebServer.GetRegistrationMessage === "function") {
+						// se specificata la funzione, ridefinisce il messaggio standard di successo
+						msgSuccess = LLWebServer.GetRegistrationMessage(prodName, res);
+					}
+
+					if (res && res.result == ACTIVATION_SUCCESS) {
+						// showAlert(msgSuccess, ALERT_TYPE.SUCCESS);
+
+						// cerco l'elemento che abbia il nome del prodotto appena attivato e la classe dello stato
+						let activatedElem = document.querySelector('[data-product-name="' + prodName + '"].lic-status');
+						if (activatedElem) {
+							activatedElem.className = "lic-status pending-restart";
+							activatedElem.innerText = "pending restart";
+						}
+					}
+					else {
+						// showAlert(ALERT_MSG.ERR_ACTIVATION, ALERT_TYPE.ERROR, -1);
+
+						if (errStr.indexOf(ALERT_MSG.ERR_ACTIVATION) === -1)
+							errStr += ALERT_MSG.ERR_ACTIVATION + "\n";
+					}
+				}
+				else {
+					// showAlert(ALERT_MSG.ERR_REACH_AXEL_SERVER, ALERT_TYPE.ERROR, -1);
+
+					if (errStr.indexOf(ALERT_MSG.ERR_REACH_AXEL_SERVER) === -1)
+						errStr += ALERT_MSG.ERR_REACH_AXEL_SERVER + "\n";
+				}
+
+				showResultMsg();
+			});
+
+			// funzione per mostrare il messaggio di errore che viene chiamata IN MODO ASINCRONO
+			// altrimenti, dato che la richiesta al server non e' sincrona, errStr sarebbe nulla perche' non aspetterebbe il risultato
+			function showResultMsg() {
+				if (errStr.length > 0)
+					showAlert("ERRORS during the activation:\n" + errStr, ALERT_TYPE.ERROR, -1);
+				else
+					showAlert("Activation complete. " + ALERT_MSG.RESTART, ALERT_TYPE.SUCCESS, -1);
+			}
+		}
+
+		function getLicenseAndActivate(inputFld, callbackFun) {
+
+			let hwid = inputFld.getAttribute("data-product-hwid");
+			let prodName = inputFld.getAttribute("data-product-name");
+			let pKeyVal = inputFld.value;
+
+			if (!hwid || !prodName) {
+				// non dovrebbe mai succedere perche' il controllo viene fatto a monte
+				showAlert(ALERT_MSG.ERR_NO_TARG_INFO, ALERT_TYPE.ERROR);
+				return;
+			}
+
+			if (!pKeyVal) {
+				showAlert(ALERT_MSG.ERR_P_KEY_EMPTY, ALERT_TYPE.ERROR);
+				return;
+			}
+
+			if (!isProductKeyValid(pKeyVal)) {
+				showAlert(ALERT_MSG.ERR_P_KEY_FORMAT_NOT_VALID, ALERT_TYPE.ERROR);
+				return;
+			}
+
+			showAlert(ALERT_MSG.GETTING_LIC_FROM_AXEL, ALERT_TYPE.INFO);
+
+			activateOnlineLicense(prodName, hwid, pKeyVal);
+		}
+
+		function tryForgottenActivation() {
+			// ottengo la lista di input con l'attributo per avere tutti i prodotti non attivi
+			let productCtrls = document.querySelectorAll("[data-product-hwid]");
+
+			for (let key in productCtrls) {
+				let inputFld = productCtrls[key];
+
+				if (inputFld.nodeType !== Node.ELEMENT_NODE)
+					continue;
+
+				let hwid = inputFld.getAttribute("data-product-hwid");
+				let prodName = inputFld.getAttribute("data-product-name");
+
+				if (!hwid || !prodName) {
+					// non dovrebbe mai succedere perche' il controllo viene fatto a monte
+					showAlert(ALERT_MSG.ERR_NO_TARG_INFO, ALERT_TYPE.ERROR);
+					return;
+				}
+
+				const DUMMY_KEY = 'AXELA-XELAX-ELAXE-LAXEL';
+
+				activateOnlineLicense(prodName, hwid, DUMMY_KEY);
+			}
+		}
+
+		// ATTIVAZIONE OFFLINE (cosiddetta telefonica)
+		/*
+		function setKey(inputFld) {
+			let licVal = inputFld.value;
+			let prodName = inputFld.getAttribute("data-product-name");
+
+			// non dovrebbe mai succedere
+			if (!prodName) {
+				showAlert(ALERT_MSG.ERR_NO_TARG_INFO, ALERT_TYPE.ERROR);
+				return;
+			}
+
+			if (!licVal || licVal.length < 32) {
+				showAlert(ALERT_MSG.ERR_P_KEY_EMPTY, ALERT_TYPE.ERROR);
+				return;
+			}
+
+			let res = LLWebServer.RegisterLicense(prodName, licVal, false);
+
+			let msgSuccess = "Activation for " + prodName + " complete. Please restart the application.";
+			if (typeof LLWebServer.GetRegistrationMessage === "function") {
+				// se specificata la funzione, ridefinisce il messaggio standard di successo
+				msgSuccess = LLWebServer.GetRegistrationMessage(prodName, res);
+			}
+
+			if (res && res.result == ACTIVATION_SUCCESS)
+				showAlert(msgSuccess, ALERT_TYPE.SUCCESS);
+			else
+				showAlert(ALERT_MSG.ERR_ACTIVATION, ALERT_TYPE.ERROR, -1);
+		}
+		*/
+
+		function showOfflineMode() {
+			document.getElementById("manualModeDiv").style.display = "block";
+		}
+
+		function showForgotProductKeySection() {
+			document.getElementById("forgotPkeyDiv").style.display = "block";
+		}
+
+		/*
+		function copyHwIdToClipboard(elemId) {
+			let elem = document.getElementById(elemId);
+			if (!elem) return;
+
+			// seleziona tutto il testo
+			elem.select();
+			document.execCommand("copy");
+			// trucco per deselezionare il testo
+			elem.setSelectionRange(elem.value.length, elem.value.length);
+			elem.blur();
+
+			showAlert("Copied.", ALERT_TYPE.SUCCESS, 3);
+		}
+		*/
+
+		// crea il file di download con le informazioni di licenza e p.key associato
+		function createActivationLicenseFile(pKeyVal) {
+			let exportDate = new Date().toLocaleString();
+			let objToExport = new Object({ "pKey": pKeyVal, "exportTime": exportDate, "licenseTime": null, "products": m_productsToExport });
+
+			// nel framework (launcher) lo esporto diversamente
+			if (typeof downloadActivatonLicense2 === "function")
+				downloadActivatonLicense2(objToExport);
+			else
+				downloadActivatonLicense(objToExport);
+		}
+
+		function exportForgottenPKeyLicenseFile() {
+			const DUMMY_KEY = 'AXELA-XELAX-ELAXE-LAXEL';
+			createActivationLicenseFile(DUMMY_KEY);
+		}
+
+		function exportActivatonLicense() {
+			let pKeyVal = document.getElementById("pKeyExportTxt").value;
+
+			if (!pKeyVal) {
+				showAlert(ALERT_MSG.ERR_P_KEY_EMPTY, ALERT_TYPE.ERROR);
+				return;
+			}
+
+			if (!isProductKeyValid(pKeyVal)) {
+				showAlert(ALERT_MSG.ERR_P_KEY_FORMAT_NOT_VALID, ALERT_TYPE.ERROR);
+				return;
+			}
+
+			createActivationLicenseFile(pKeyVal);
+		}
+
+		// scarica il JSON con le informazioni di licenza
+		function downloadActivatonLicense(dataObj) {
+			var element = document.createElement('a');
+			element.setAttribute('href', 'data:application/json,' + JSON.stringify(dataObj));
+			element.setAttribute('download', "ALlic.json");
+
+			element.style.display = 'none';
+			document.body.appendChild(element);
+
+			element.click();
+
+			document.body.removeChild(element);
+		}
+
+		// evento chiamato dal bottone
+		function selectFile() {
+			document.getElementById('selectfile').click();
+		}
+
+		// evento chiamato al change dell'input del file
+		function uploadLicenseBtn() {
+			fileobj = document.getElementById('selectfile').files[0];
+			parseLicense(fileobj);
+		}
+
+		// event chiamato dal drop del file
+		function uploadLicense(e) {
+			e.preventDefault();
+			let fileobj = e.dataTransfer.files[0];
+			parseLicense(fileobj);
+		}
+
+		function parseLicense(file) {
+			if (file.type !== "application/json") {
+				showAlert(ALERT_MSG.ERR_FORMAT_LIC_FILE, ALERT_TYPE.ERROR, -1);
+				return;
+			}
+
+			let reader = new FileReader();
+			reader.readAsText(file);
+			reader.onload = function() {
+				activateLicense(reader.result);
+			};
+
+			// ATTIVAZIONE OFFLINE tramite file di licenza
+			function activateLicense(readerResult) {
+				let result = JSON.parse(readerResult);
+
+				let productList = result.products;
+
+				let missingLicenses = [];
+				let activatedLicenses = [];
+				let failedActivations = [];
+				for (let key in productList) {
+					let prod = productList[key];
+
+					let hwid = prod.hwid;
+					let lic = prod.license;
+					let name = prod.name;
+
+					if (!hwid || !name) {
+						showAlert(ALERT_MSG.ERR_PARSE_LIC_FILE, ALERT_TYPE.ERROR, -1);
+						return;
+					}
+
+					if (!lic) {
+						missingLicenses.push(name);
+						continue;
+					}
+
+					// attivo la licenza per il prodotto corrente solo se non e' gia' attiva
+					if (!m_licensesOk[name]) {
+						let res = LLWebServer.RegisterLicense(name, lic, false);
+						if (res && res.result == ACTIVATION_SUCCESS) {
+							activatedLicenses.push(name);
+
+							// cerco l'elemento che abbia il nome del prodotto appena attivato e la classe dello stato
+							let activatedElem = document.querySelector('[data-product-name="' + name + '"].lic-status');
+							if (activatedElem) {
+								activatedElem.className = "lic-status pending-restart";
+								activatedElem.innerText = "pending restart";
+							}
+						}
+						else
+							failedActivations.push(name);
+					}
+				}
+
+				if (failedActivations.length === 0 && activatedLicenses.length > 0)
+					showAlert("Licenses activated for the following products: " + activatedLicenses.join(", ") + ". " + ALERT_MSG.RESTART, ALERT_TYPE.SUCCESS);
+				else if (failedActivations.length > 0 || missingLicenses.length > 0)
+					showAlert("Could not activate licenses for the following products: " + failedActivations.join(", ") + missingLicenses.join(", "), ALERT_TYPE.WARNING);
+			}
+		}
+
+		function isProductKeyValid(pKey) {
+			// matcha il seriale con i trattini oppure senza
+			// 3 gruppi da 5 caratteri seguiti da trattino + gruppo finale || 20 caratteri di fila
+			const regex = /^([A-Za-z0-9]{5}-){3}[A-Za-z0-9]{5}$|^[A-Za-z0-9]{20}$/;
+			return pKey.match(regex);
+		}
+
+		// disabilito il trascinamento sul quello che non e' la drag area per evitare problemi
+		window.addEventListener("dragover", function(e) {
+            e = e || event;
+            if (e.target.tagName !== "drag_upload_file") {  // check which element is our target
+                e.preventDefault();
+            }
+        }, false);
+
+        window.addEventListener("drop", function(e) {
+            e = e || event;
+            if (e.target.tagName !== "drag_upload_file") {  // check which element is our target
+                e.preventDefault();
+            }
+        }, false);
+	</script>
+</head>
+<body>
+	<div class="flx-wrapper">
+		<div class="fill-height">
+			<div id="navigationBar">
+				<!-- qui vengono appesi i bottoni programmaticamente -->
+				<span id="headButtonContainer">
+				</span>
+
+				<span class="head-right-container">
+					<img id="loginStatusImg">
+	
+					<!-- qui vengono appese immagini programmaticamente -->
+					<span id="customLogoArea">
+					</span>
+				</span>
+			</div>
+
+			<div class="alert" id="alert" style="display: none; margin: 10px 5px 0 5px;">
+				<span class="closebtn" onclick="hideAlert()">&times;</span>
+				<span id="alertTxt"></span>
+			</div>
+
+			<div class="content">
+				<div class="box" id="autoModeDiv">
+					<span class="box-title">Online activation</span>
+					<table id="prodTbl" class="lic-tbl">
+						<tr>
+							<td class="tab-head">Product name</td>
+							<td class="tab-head">License status</td>
+							<td class="tab-head">Activation</td>
+						</tr>
+					</table>
+					<div id="offlineShowLinkDiv" style="margin-top: 20px; font-size: 0.7em;"> 
+						<svg xmlns="http://www.w3.org/2000/svg" height="17" width="17" viewBox="0 0 17 17">
+							<g>
+								<path id="path1" transform="rotate(0,8.5,8.5) translate(0,1.02265272489602) scale(0.531250221654865,0.531250221654865)  " fill="#FFAA0B" d="M14.474757,20.894995L14.474757,23.562994 17.524841,23.562994 17.526794,23.562994 17.526794,20.894995z M14.950836,8.2090167L14.474757,18.709019 17.524841,18.709019 17.044855,8.2090167z M15.998822,0C16.924858,1.8512219E-07,17.780824,0.48999053,18.248848,1.2929997L31.644996,24.237005C32.115951,25.036993 32.115951,26.032995 31.659034,26.847021 31.188938,27.653023 30.332971,28.150001 29.395948,28.150001L2.603649,28.150001C1.6735847,28.150001 0.80968323,27.653023 0.34556663,26.847021 -0.11732932,26.032995 -0.11635275,25.036993 0.35557639,24.237005L13.748796,1.2929997C14.218773,0.49301177,15.072786,1.8512219E-07,15.998822,0z" />
+							</g>
+						</svg>
+						<span style="vertical-align: top;">This requires an active Internet connection. If not available, see <a href="#" onclick="showOfflineMode()">offline mode</a>.</span>
+					</div>
+
+					<div id="forgotShowLinkDiv" style="margin-top: 10px; font-size: 0.7em;">
+						<svg xmlns="http://www.w3.org/2000/svg" height="19" width="19" viewBox="0 0 19 19">
+						  <g>
+								<path id="path1" transform="rotate(0,9.5,9.5) translate(0,1.03257504105568) scale(0.59375,0.59375)  " fill="#D2930A" d="M25.897975,18.148801C24.223954,18.148801,22.930947,19.090818,22.255925,20.612791L22.000951,21.292845 2.40483,21.292845 2.1718269,21.239867 3.0548278,21.980834 3.9968496,23.810791 5.7828398,22.292846 6.880838,22.292846 7.9768525,24.124877 9.8028823,22.292846 10.929873,22.292846 12.02488,24.124877 13.850879,22.292846 21.694949,22.292846 21.796939,23.017821C22.061956,25.231812 23.594953,26.488892 25.897975,26.488892 28.194985,26.488892 30.063985,24.596802 30.063985,22.31079 30.063985,20.0249 28.194985,18.148801 25.897975,18.148801z M25.897975,16.276852C29.262984,16.276852 32.000001,19.044797 32.000001,22.398803 32.000001,25.752808 29.262984,28.521852 25.897975,28.521852 22.921945,28.521852 20.699918,27.292848 20.029931,24.292847L14.6549,24.292847 11.639868,27.157838 10.121884,24.538818 7.5918713,27.037843 6.0448347,24.431885 3.4738365,26.750854 1.5118194,23.145873 0.58380508,22.298827C-0.035186626,21.61682 -0.052185014,21.005858 0.042817079,20.614866 0.12082013,20.292845 0.38681287,19.700804 1.2908097,19.360838L1.3918238,19.408811 2.2838269,19.292845 20.77493,19.292845C21.831943,17.292844,23.666946,16.276852,25.897975,16.276852z M14.822008,15.257987L16.758996,15.257987 16.758996,17.194975 14.822008,17.194975z M16.043004,0C18.733008,0 20.759011,2.189992 20.759011,4.8819828 20.759011,7.147975 19.664008,9.1709685 16.759006,9.6549668L16.759006,12.352958C16.759006,12.887956 16.326005,13.320955 15.791004,13.320955 15.256003,13.320955 14.823003,12.887956 14.823003,12.352958L14.823003,8.7949696C14.823003,8.2599716 15.419004,7.826973 15.954004,7.826973 17.281005,7.826973 18.905007,6.5409775 18.905007,4.8819828 18.905007,3.2859888 17.599006,1.9369926 16.005004,1.9369926 14.389002,1.9369926 13.144,3.1789885 13.144,4.7639837 13.144,5.2989817 12.719999,5.7319803 12.185999,5.7319803 11.650998,5.7319803 11.221997,5.2989817 11.221997,4.7639837 11.221997,2.0929928 13.341001,0 16.043004,0z" />
+						  </g>
+						</svg>
+
+						<a href="#" onclick="showForgotProductKeySection(true)">Forgot your product key?</a>
+					</div>
+				</div>
+
+				<div class="box" id="manualModeDiv">
+					<span class="box-title">Manual activation (offline mode)</span>
+
+					<!-- attivazione mediante export JSON di licenza -->
+					<div>
+						<p>To activate products manually you have to export an activation file and attach it<br/>to an email to send to <a href="mailto:support@axelsw.it">support@axelsw.it</a>.</p>
+						<p>Axel S.r.l will verify your license and send back an activation file; drag it into the<br/>apposit area or select it manually trough the apposite button.</p>
+
+						<div class="hw-id-box">
+							<div>
+								<p>Insert your product key: <input placeholder="Product key" style="width: 200px;" id="pKeyExportTxt"></input></p>
+							</div>
+							<button class="head-button small" title="Export offline activation file" onclick="exportActivatonLicense()">
+								<svg xmlns="http://www.w3.org/2000/svg" height="32" width="32" viewBox="0 0 32 32">
+									<g>
+										<path id="path1" transform="rotate(0,16,16) translate(2,4.79737460613251) scale(0.875,0.875)  " fill="#0E7F9C" d="M23.468018,4.224001L32,12.799994 23.468018,20.36201 23.468018,16.327996C23.468018,16.327996 8.7410278,12.297995 5.0570068,20.36201 5.0570068,18.346993 6.3980103,8.2599984 23.468018,8.2599984z M0,0L21.333008,0 21.333008,4.269991 19.200012,4.269991 19.200012,2.1329966 2.132019,2.1329966 2.132019,23.470988 19.200012,23.470988 19.200012,21.340007 21.333008,21.340007 21.333008,25.606 0,25.606z" />
+									</g>
+								</svg>
+							</button>
+						</div>
+
+						<div class="drop_file_zone" id="drop_file_zone" ondrop="uploadLicense(event)" ondragover="return false">
+							<div id="drag_upload_file">
+								<p>Drag your activation file here</p>
+								<p>or</p>
+								<p><input class="btn" type="button" value="Select file" onclick="selectFile()"></p>
+								<input type="file" id="selectfile" accept=".json" onchange="uploadLicenseBtn()">
+							</div>
+						</div>
+					</div>
+
+					<!-- <div style="border-top: 2px solid darkgrey; margin-top: 20px;"></div> -->
+
+					<!-- attivazione "telefonica" -->
+					<!-- <div>
+						<p>You can also contact Axel S.r.l. communicating your purchased <u>product key</u>, the</br><u>hardware id</u> and the <u>name of the product</u> to activate.</p>
+						<p>Send an email to <a href="mailto:support@axelsw.it">support@axelsw.it</a> or call <a href="tel:+39-0332-969315">+39-0332-969315</a>.</p>
+
+						<div class="hw-id-box">
+							<div>
+								<p>Your hardware id is: <input id="hwIdVal" readonly></input></p>
+							</div>
+							<div style="margin-left: 10px;">
+								<button class="head-button small" title="Copy to clipboard" onclick="copyHwIdToClipboard('hwIdVal')">
+									<svg xmlns="http://www.w3.org/2000/svg" height="32" width="32" viewBox="0 0 32 32">
+										<g>
+											<path id="path1" transform="rotate(0,16,16) translate(2,2.86362624168396) scale(0.875,0.875)  " fill="#E77E00" d="M22.657043,13.51599L25.622986,13.51599 32,19.891997 30.517029,21.374999 25.583984,26.308013 22.695984,26.308013 22.657043,26.270019 27.986023,20.940002 13.928009,20.940002 13.928009,18.843993 27.986023,18.843993z M10.928009,1.2690124C10.021027,1.2690123 9.2850037,1.9649962 9.2850037,2.8240052 9.2850037,3.6830135 10.021027,4.3800045 10.928009,4.3800045 11.835022,4.3800045 12.571014,3.6830135 12.571014,2.8240052 12.571014,1.9649962 11.835022,1.2690123 10.928009,1.2690124z M10.928009,0C12.524017,-7.4916898E-08,13.827026,1.1860045,13.906006,2.6790162L13.910004,2.8240052 16.44101,2.8240052 16.44101,3.7279964 21.856995,3.7279964 21.856995,17.710998 19.458984,17.710998 19.458984,6.7149959 16.44101,6.7149959 16.44101,9.7369986 5.4150085,9.7369986 5.4150085,6.7149959 2.3970032,6.7149959 2.3970032,27.671996 19.458984,27.671996 19.458984,22.111999 21.856995,22.111999 21.856995,30.025998 0,30.025998 0,3.7279964 5.4150085,3.7279964 5.4150085,2.8240052 7.9460144,2.8240052 7.9490051,2.6790162C8.0290222,1.1860045,9.3320007,-7.4916898E-08,10.928009,0z" />
+										</g>
+									</svg>
+								</button>
+							</div>
+						</div>
+
+						<table id="prodTblMan" class="lic-tbl">
+							<tr>
+								<td class="tab-head">Product name</td>
+								<td class="tab-head">License status</td>
+								<td class="tab-head">Activation</td>
+							</tr>
+						</table>
+					</div> -->
+
+				</div>
+
+				<div class="box" id="forgotPkeyDiv">
+					<p>
+						<t:t>If you already had registered your product, this procedure will try<br>to recover your previous license from Axel S.r.l. and restore it.</t:t>
+					</p>
+
+					<p style="margin-left: auto; margin-right: auto; width: 380px;">
+						<button class="btn" onclick="tryForgottenActivation()">Try online activation</button>
+						<button class="btn" onclick="exportForgottenPKeyLicenseFile()">Export offline activation file</button>
+					</p>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

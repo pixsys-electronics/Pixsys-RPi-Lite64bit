@@ -1,0 +1,22 @@
+/dts-v1/;
+/plugin/;
+
+/ {
+    compatible = "brcm,bcm2835", "bcrm,bcm2708";
+
+        fragment@1 {
+                target-path = "/";
+                __overlay__ {
+                        pwm_backlight: pwm_backlight {
+                                compatible = "pwm-backlight";
+                                brightness-levels = <0 1023>;
+				num-interpolated-steps = <100>;
+                                default-brightness-level = <50>;
+                                pwms = <&pwm 0 5000000>;
+                                enable-gpios = <&gpio 26 0>;
+                                power-supply = <&vdd_3v3_reg>;
+                                status = "okay";
+                        };
+                };
+        };
+};

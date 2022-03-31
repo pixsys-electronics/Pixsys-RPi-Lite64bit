@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<EtherCATConfig xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Version="1.5">
+	<Config>
+		<Master>
+			<Info>
+				<Name />
+				<Destination>FFFFFFFFFFFF</Destination>
+				<Source>000000000001</Source>
+				<EtherType>A488</EtherType>
+			</Info>
+			<InitCmds>
+				<InitCmd>
+					<Transition>IP</Transition>
+					<BeforeSlave>true</BeforeSlave>
+					<Comment>read slave count</Comment>
+					<Requires>cycle</Requires>
+					<Cmd>7</Cmd>
+					<Adp>0</Adp>
+					<Ado>304</Ado>
+					<Data>0000</Data>
+					<Retries>0</Retries>
+				</InitCmd>
+				<InitCmd>
+					<Transition>IP</Transition>
+					<BeforeSlave>true</BeforeSlave>
+					<Comment>read slave count</Comment>
+					<Requires>cycle</Requires>
+					<Cmd>7</Cmd>
+					<Adp>0</Adp>
+					<Ado>304</Ado>
+					<Data>0000</Data>
+					<Retries>0</Retries>
+				</InitCmd>
+				<InitCmd>
+					<Transition>IP</Transition>
+					<BeforeSlave>true</BeforeSlave>
+					<Comment>enable ECAT IRQ</Comment>
+					<Requires>cycle</Requires>
+					<Cmd>8</Cmd>
+					<Adp>0</Adp>
+					<Ado>512</Ado>
+					<Data>0400</Data>
+					<Retries>3</Retries>
+				</InitCmd>
+				<InitCmd>
+					<Transition>IP</Transition>
+					<BeforeSlave>true</BeforeSlave>
+					<Comment>clear configured addresses</Comment>
+					<Requires>cycle</Requires>
+					<Cmd>8</Cmd>
+					<Adp>0</Adp>
+					<Ado>16</Ado>
+					<Data>0000</Data>
+					<Retries>3</Retries>
+				</InitCmd>
+				<InitCmd>
+					<Transition>IP</Transition>
+					<BeforeSlave>true</BeforeSlave>
+					<Comment>clear crc register</Comment>
+					<Requires>cycle</Requires>
+					<Cmd>8</Cmd>
+					<Adp>0</Adp>
+					<Ado>768</Ado>
+					<Data>0000000000000000</Data>
+					<Retries>3</Retries>
+				</InitCmd>
+				<InitCmd>
+					<Transition>IP</Transition>
+					<Transition>PI</Transition>
+					<Transition>BI</Transition>
+					<Transition>SI</Transition>
+					<Transition>OI</Transition>
+					<BeforeSlave>true</BeforeSlave>
+					<Comment>clear fmmu</Comment>
+					<Requires>cycle</Requires>
+					<Cmd>8</Cmd>
+					<Adp>0</Adp>
+					<Ado>1536</Ado>
+					<DataLength>256</DataLength>
+					<Retries>3</Retries>
+				</InitCmd>
+				<InitCmd>
+					<Transition>IP</Transition>
+					<BeforeSlave>true</BeforeSlave>
+					<Comment>clear sm</Comment>
+					<Requires>cycle</Requires>
+					<Cmd>8</Cmd>
+					<Adp>0</Adp>
+					<Ado>2048</Ado>
+					<DataLength>256</DataLength>
+					<Retries>3</Retries>
+				</InitCmd>
+				<InitCmd>
+					<Transition>IP</Transition>
+					<BeforeSlave>true</BeforeSlave>
+					<Comment>clear dc system time</Comment>
+					<Requires>cycle</Requires>
+					<Cmd>8</Cmd>
+					<Adp>0</Adp>
+					<Ado>2320</Ado>
+					<DataLength>32</DataLength>
+					<Retries>3</Retries>
+				</InitCmd>
+				<InitCmd>
+					<Transition>IP</Transition>
+					<BeforeSlave>true</BeforeSlave>
+					<Comment>clear dc cycle cfg</Comment>
+					<Requires>cycle</Requires>
+					<Cmd>8</Cmd>
+					<Adp>0</Adp>
+					<Ado>2433</Ado>
+					<Data>00</Data>
+					<Retries>3</Retries>
+				</InitCmd>
+				<InitCmd>
+					<Transition>IP</Transition>
+					<BeforeSlave>true</BeforeSlave>
+					<Comment>reset dc speed</Comment>
+					<Requires>cycle</Requires>
+					<Cmd>8</Cmd>
+					<Adp>0</Adp>
+					<Ado>2352</Ado>
+					<Data>0010</Data>
+					<Retries>3</Retries>
+				</InitCmd>
+				<InitCmd>
+					<Transition>IP</Transition>
+					<BeforeSlave>true</BeforeSlave>
+					<Comment>configure dc filter</Comment>
+					<Requires>cycle</Requires>
+					<Cmd>8</Cmd>
+					<Adp>0</Adp>
+					<Ado>2356</Ado>
+					<Data>000C</Data>
+					<Retries>3</Retries>
+				</InitCmd>
+				<InitCmd>
+					<Transition>IP</Transition>
+					<BeforeSlave>true</BeforeSlave>
+					<Comment>en/disable second physical address</Comment>
+					<Requires>cycle</Requires>
+					<Cmd>8</Cmd>
+					<Adp>0</Adp>
+					<Ado>259</Ado>
+					<Data>00</Data>
+					<Retries>3</Retries>
+				</InitCmd>
+			</InitCmds>
+		</Master>
+		<ProcessImage>
+			<Inputs>
+				<ByteSize>0</ByteSize>
+			</Inputs>
+			<Outputs>
+				<ByteSize>0</ByteSize>
+			</Outputs>
+		</ProcessImage>
+	</Config>
+</EtherCATConfig>

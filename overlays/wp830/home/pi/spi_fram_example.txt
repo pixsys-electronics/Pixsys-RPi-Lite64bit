@@ -1,0 +1,5 @@
+dd if=/dev/random of=/sys/bus/spi/devices/spi3.0/eeprom bs=2k count=1
+hexdump -C /sys/bus/spi/devices/spi3.0/eeprom
+
+dd if=/dev/zero of=/sys/bus/spi/devices/spi3.0/eeprom bs=2k count=1
+hexdump -C /sys/bus/spi/devices/spi3.0/eeprom
