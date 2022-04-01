@@ -7,6 +7,6 @@ adduser pixsys sudo
 addgroup plc
 adduser pixsys plc
 
-mkdir -p /data/usr
-chgrp -R plc /data/usr
-chmod g+rwxs /data/usr
+#mkdir -p /data/usr
+#chgrp -R plc /data/usr
+#chmod g+rwxs /data/usr

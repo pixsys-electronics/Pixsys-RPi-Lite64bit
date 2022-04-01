@@ -1,5 +1,5 @@
 {{- $arch     := or .arch     "armhf" -}}
-{{- $suite    := or .suite    "buster" -}}
+{{- $suite    := or .suite    "raspios_armhf" -}}
 {{- $board    := or .board    "rmb200" -}}
 {{- $flavour  := or .flavour  "WP830-1AD" -}}
 {{- $kernel   := or .kernel   "5.15.30-v7l-wp830-g1fe617a917ea" -}}
@@ -12,20 +12,20 @@
 architecture: {{ $arch }}
 
 actions:
-  - action: download
-    url: https://downloads.raspberrypi.org/raspios_armhf/root.tar.xz
-    #url: https://downloads.raspberrypi.org/raspios_full_armhf/root.tar.xz
-    name: root
-    unpack: false
-
-  - action: unpack
-    origin: root
-    compression: xz
-
-
+# Action da eseguire se si vuole anche scaricare il file root.tar.xz dal web
+#  - action: download
+#    url: https://downloads.raspberrypi.org/raspios_armhf/root.tar.xz
+#    #url: https://downloads.raspberrypi.org/raspios_full_armhf/root.tar.xz
+#    name: root
+#
 #  - action: unpack
-#    file: root.tar.xz
+#    origin: root
 #    compression: xz
+
+# Action da usare se il file root.tar.xz è già nella root del progetto.
+  - action: unpack
+    file: root.tar.xz
+    compression: xz
 
   - action: download
     url: https://downloads.raspberrypi.org/raspios_armhf/boot.tar.xz
@@ -38,6 +38,11 @@ actions:
     origin: boot
     destination: /boot
 
+  - action: run
+    description: Remove ld.so.preload
+    chroot: true
+    command: rm etc/ld.so.preload
+
   - action: overlay
     description: WP830 device specific file
     source: overlays/wp830
@@ -47,13 +52,78 @@ actions:
     source: overlays/deviceinfo
 
   - action: overlay
+    description: script to configure board via udp broadcast
+    source: overlays/finder
+
+  - action: overlay
     description: hook for first boot actions via /etc/rc.local
     source: overlays/firstboot
+
+  - action: overlay
+    description: add authorized_keys for root
+    source: overlays/authorized_keys
+
+  - action: run
+    description: create pixsys user
+    chroot: true
+    script: scripts/pixsys.sh
+
+  - action: overlay
+    description: add pixsys portal
+    source: overlays/pixsysportal
+
+#  - action: overlay
+#    description: configuration for wifi hotspot
+#    source: overlays/hostapd
+
+  - action: run
+    description: set hostname
+    chroot: true
+    command: echo WP830 > /etc/hostname
+
+  - action: run
+    description: set hosts file
+    chroot: true
+    script: scripts/setup-hosts.sh WP830
+
+  - action: overlay
+    description: copy runtime deb package
+    source: overlays/codesys
+
+ # - action: run
+ #   description: create plc user
+ #   chroot: true
+ #   script: scripts/plc_user.sh PL700
+
+  - action: run
+    description: prepare image for running CodeSys
+    chroot: true
+    script: scripts/codesys.sh
+
+#  - action: run
+#    description: set timezone
+#    chroot: true
+#    script: scripts/setup-timezone.sh "{{ $timezone }}"
+
+  - action: run
+    description: create /etc/pixsys.info
+    chroot: true
+    script: scripts/pixsys-info.sh "{{ $arch }}" "{{ $suite }}" "{{ $board }}" "{{ $flavour }}" "{{ $kernel }}" "{{ $commit }}"
+
+#  - action: run
+#    description: do not write systemd journal to disk
+#    chroot: true
+#    command: rm -rf /var/log/journal/
+
+#  - action: pack
+#    file: {{ $update }}
+#    compression: gz
+
 
   - action: image-partition
     description: create a partitioned image
     imagename: {{ $image }}
-    imagesize: 8GB
+    imagesize: 10GB
     partitiontype: msdos
     mountpoints:
       - mountpoint: /boot
@@ -62,6 +132,9 @@ actions:
       - mountpoint: /
         partition: root
         options: [noatime]
+      - mountpoint: /data
+        partition: data
+        option: [noatime]
     partitions:
       - name: boot
         fs: fat32
@@ -71,6 +144,10 @@ actions:
       - name: root
         fs: ext4
         start: 257M
+        end: 8500M
+      - name: data
+        fs: ext4
+        start: 8501M
         end: 100%
 
   - action: run

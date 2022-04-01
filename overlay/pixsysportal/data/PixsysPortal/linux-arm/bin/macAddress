@@ -1,3 +1,0 @@
-#!/bin/bash
-
-ip -o link | grep -f <(ls -d /sys/class/net/*/device | cut -d/ -f5) | awk '{print $17}'

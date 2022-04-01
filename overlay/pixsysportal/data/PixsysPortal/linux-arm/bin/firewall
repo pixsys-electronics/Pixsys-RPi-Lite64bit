@@ -1,7 +1,0 @@
-
-#!/bin/sh
-echo "Initializing ip forwarding"
-echo 1 > /proc/sys/net/ipv4/ip_forward
-iptables -A FORWARD -i edge0 -j ACCEPT
-iptables -A FORWARD -o edge0 -j ACCEPT
-iptables -t nat -A POSTROUTING -j MASQUERADE

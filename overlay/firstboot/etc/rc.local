@@ -1,6 +1,0 @@
-#!/bin/bash -e
-
-if [ -f /etc/rc.firstboot ]; then
-    /etc/rc.firstboot
-    mv /etc/rc.firstboot /etc/rc.firstboot.done
-fi
