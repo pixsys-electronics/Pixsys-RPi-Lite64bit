@@ -1,0 +1,6 @@
+Id;Default
+0;%s
+16;%t[HH$':$'mm$':$'ss]
+15;Address
+8;Status bar
+;

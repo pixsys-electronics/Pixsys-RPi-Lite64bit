@@ -1,0 +1,26 @@
+/dts-v1/;
+/plugin/;
+
+/ {
+  compatible = "brcm,bcm2835";
+  
+  // enable flash on spi3.0
+  fragment@0 {
+    target = <&spi3>;
+    __overlay__ {
+      #address-cells = <1>;
+      #size-cells = <0>;
+      // https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/tree/Documentation/devicetree/bindings/eeprom/at25.txt?h=v5.4.187
+      fram@0 {
+        compatible = "atmel,at25";
+        // reg : chip select number
+        reg = <0>;
+        // spi-max-frequency : max spi frequency to use
+        spi-max-frequency = <20000000>;
+	pagesize = <1024>;
+	size = <2048>;
+	address-width = <16>;
+      };
+    };
+  };
+};

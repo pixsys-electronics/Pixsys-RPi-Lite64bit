@@ -1,0 +1,28 @@
+/dts-v1/;
+/plugin/;
+
+/ {
+  compatible = "brcm,bcm2835";
+  
+  // enable flash on spi3.0
+  fragment@0 {
+    target = <&spi3>;
+    __overlay__ {
+      #address-cells = <1>;
+      #size-cells = <0>;
+      fram@0 {
+        #address-cells = <1>;
+        #size-cells = <1>;
+        compatible = "micron,mt25qu02g", "jedec,spi-nor";
+        reg = <0>;
+        spi-max-frequency = <2000000>;
+
+
+        partition@p1 {
+        label = "spi-fram";
+        reg = <0x0 0x20000>;
+        };
+      };
+    };
+  };
+};

@@ -1,0 +1,4 @@
+Id;Default;en;de
+PersistenceChannelForDecoupledBinaryMemoryStorage_Desc;This PersistenceChannel can define a decoupled BinaryMemoryStorage-module as its submodule.;This PersistenceChannel can define a decoupled BinaryMemoryStorage-module as its submodule.;Der Persistenz-Kanal can ein $"decoupled$" BinaryMemoryStorage-Modul als Submodul definieren.
+DecoupledBinaryMemoryStorage_Desc;This is a decoupled module that makes sure that not the entire PersistenceManager is stored to RETAIN area of the memory.;This is a decoupled module that makes sure that not the entire PersistenceManager is stored to RETAIN area of the memory.;Dies stellt ein $"decoupled$" Modul dar, das sicherstellt, das nicht das gesamte PersistenzManager Modul mit all seinen Kindmodulen im RETAIN Bereich des Speichers abgelegt wird.
+;;;

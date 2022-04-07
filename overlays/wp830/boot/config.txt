@@ -59,8 +59,9 @@ max_framebuffers=2
 ###########################################
 dtparam=spi=on
 dtoverlay=spi3-1cs,cs0_pin=0,cs0_spidev=off
-dtoverlay=fm25l16_spi3
-dtoverlay=mcp2515,spi0-0,oscillator=8000000,interrupt=25
+#dtoverlay=fm25l16_spi3
+dtoverlay=mb85rs2mly_spi3
+dtoverlay=mcp2515,spi0-0,oscillator=16000000,interrupt=25
 #dtoverlay=mcp2515,spi0-0,interrupt=25
 ###########################################
 

@@ -1,0 +1,36 @@
+Id;Default;DE;EN
+PersistenceManager_Description;Module that takes care of saving and loading values of persistent variable;Modul, das das Laden und Speichern persistenter Variablen zur Aufgabe hat.;Module that takes care of saving and loading values of persistent variable
+PersistenceManagerLow_Task;low priority:;niedrige Priorität:;low priority:
+Role_DataStorage;Data Storage;Datenspeicher;Data Storage
+NAME_xCompressTags;xCompressTags;xCompressTags;xCompressTags
+DESC_xCompressTags;TRUE: compress variable tags;TRUE: Variablenbezeichnungen komprimieren;TRUE: compress variable tags
+NAME_tPeriodicSaving;tPeriodicSaving;tPeriodicSaving;tPeriodicSaving
+DESC_tPeriodicSaving;time after which the variables are stored (0: periodic saving off);Zeitintervall, in welchem die Werte gespeichert werden (0: periodische Speicherung aus);time after which the variables are stored (0: periodic saving off)
+NAME_xReadVarsDuringInit;xReadVarsDuringInit;xReadVarsDuringInit;xReadVarsDuringInit
+DESC_xReadVarsDuringInit;TRUE: read the persistent variables during initialization of application$; FALSE: read variable values during first cycle;TRUE: Variablen während Initialisierungsphase lesen$; FALSE: im ersten Zyklus;TRUE: read the persistent variables during initialization of application$; FALSE: read variable values during first cycle
+NAME_xConsistentCopyInHighPrioTask;xConsistentCopyInHighPrioTask;xConsistentCopyInHighPrioTask;xConsistentCopyInHighPrioTask
+DESC_xConsistentCopyInHighPrioTask;TRUE: persistent variables are copied in high priority task;TRUE: Persitenzvariablen werden in höchstpriorer Task kopiert;TRUE: persistent variables are copied in high priority task
+PersistenceManagerHigh_Task;highest priority:;höchste Priorität:;highest priority:
+NAME_xSaveOnChange;xSaveOnChange;xSaveOnChange;xSaveOnChange
+DESC_xSaveOnChange;TRUE: permanently compare old and actual values and save when different;TRUE: ständiger Vergleich zwischen vorigen und aktuellen Werten$; Speichern, wenn unterschiedlich;TRUE: permanently compare old and actual values and save when different
+NAME_xConvertVarsWithDifferentType;xConvertVarsWithDifferentType;xConvertVarsWithDifferentType;xConvertVarsWithDifferentType
+DESC_xConvertVarsWithDifferentType;TRUE: if types of stored and actual variable are different, try to convert stored value;TRUE: wenn gespeicherter und tatsächlicher Variablentyp unterscheidlich, versuche Konvertierung;TRUE: if types of stored and actual variable are different, try to convert stored value
+NAME_xIntegrityCheckBeforeReading;xIntegrityCheckBeforeReading;xIntegrityCheckBeforeReading;xIntegrityCheckBeforeReading
+DESC_xIntegrityCheckBeforeReading;TRUE: do an integrity check of data base;TRUE: Integrität der Datenbank überprüfen;TRUE: do an integrity check of data base
+PersistenceChannel_Description;Module that deals with the persistence variables that are held in the same data base;Modul, das die persistenten Variablen behandelt, die in derselben Datenbank gehalten werden.;Module that deals with the persistence variables that are held in the same data base
+Role_Channels;Channels;Kanäle;Channels
+NAME_xSeparateArchivePerToplevelInstance;xSeparateArchivePerToplevelInstance ;xSeparateArchivePerToplevelInstance ;xSeparateArchivePerToplevelInstance
+DESC_xSeparateArchivePerToplevelInstance;TRUE: generate a separate archive for each toplevel instance;TRUE: erzeuge für jede Toplevel-Instanz ein eigenes Archiv;TRUE: generate a separate archive for each toplevel instance
+NAME_xMakeDataCRCConsistencyCheck;xMakeDataCRCConsistencyCheck;xMakeDataCRCConsistencyCheck;xMakeDataCRCConsistencyCheck
+DESC_xMakeDataCRCConsistencyCheck;TRUE: a CRC is calculated before and after the saving process, whereas both CRC have to match for a successful saving;TRUE: ein CRC-Wert wird vor und nach dem Speichervorgangs berechnet, wobei beide werte übereinstimmen müssen um den Speichervorgang erfolgreich abzuschließen;TRUE: a CRC is calculated before and after the saving process, whereas both CRC have to match for a successful saving
+NAME_uiSavingRetriesIfCRCCisistencyCheckFails;uiSavingRetriesIfCRCConsistencyCheckFails;uiSavingRetriesIfCRCConsistencyCheckFails;uiSavingRetriesIfCRCConsistencyCheckFails
+DESC_uiSavingRetriesIfCRCCisistencyCheckFails;If xMakeDataCRCConsistencyCheck is TRUE, this value indicates how often saving is retried if a CRC missmatch was detected;Falls xMakeDataCRCConsistencyCheck auf TRUE steht, gibt dieser Wert an, wie oft der Speichervorgang wiederholt werden soll, falls die berechneten CRC-Werte nicht übereinstimmen;If xMakeDataCRCConsistencyCheck is TRUE, this value indicates how often saving is retried if a CRC missmatch was detected
+DisableChannel_Name;Disable channel;Kanal deaktivieren;Disable channel
+DisableChannel_Desc;While the channel is deactivated no reading or writing is performed.;Während der Kanal deaktiviert ist, wird kein Speichern oder Laden ausgeführt;While the channel is deactivated no reading or writing is performed.
+xLogSaveTimeEnabled_Desc;Whether the time for writing shall be logged;Entscheidet, ob die Zeit, die zum Schreiben benötigt wird, geloggt wird.;Whether the time for writing shall be logged
+xLogSaveTimeEnabled_Name;xLogSaveTimeEnabled;xLogSaveTimeEnabled;xLogSaveTimeEnabled
+eAutomaticActionOnlineChange_Name;eAutomaticActionOnlineChange;eAutomaticActionOnlineChange;eAutomaticActionOnlineChange
+eAutomaticActionOnlineChange_Desc;The action that shall be performed in case of an OnlineChange;Beschreibt die Aktion, die im Falle eines OnlineChanges ausgeführt werden soll.;The action that shall be performed in case of an OnlineChange
+eAutomaticActionPlcStop_Name;eAutomaticActionPlcStop;eAutomaticActionPlcStop;eAutomaticActionPlcStop
+eAutomaticActionPlcStop_Desc;The action that shall be performed in case of an Reset;Beschreibt die Aktion, die im Falle eines Reset ausgeführt werden soll.;The action that shall be performed in case of an Reset
+;;;

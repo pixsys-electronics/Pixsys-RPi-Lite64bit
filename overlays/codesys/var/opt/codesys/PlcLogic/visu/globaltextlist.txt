@@ -1,0 +1,14 @@
+Id;Default
+708;%d
+496;%f
+140;Azzera contatori
+914;COLLAUDO PL700
+930;Nodo 1
+164;Nodo 2
+45;Num. pacchetti persi
+415;Numero accensioni
+460;Porta USB
+827;Seriale CAN_0 (morsettiera)
+725;Seriale CAN_1 (PLE-DIN-BUS)
+701;Seriali
+902;Seriali COM1 RS232 <-> COM2 RS485

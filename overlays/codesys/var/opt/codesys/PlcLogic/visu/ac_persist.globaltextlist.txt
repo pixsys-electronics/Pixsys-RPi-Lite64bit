@@ -1,0 +1,17 @@
+Id;Default;DE;EN
+7; %d;%d;%d
+4; %d [B];%d [B];%d [B]
+9; %d [ms];%d [ms];%d [ms]
+11; %s;%s;%s
+24; date of last reading:;Letztes Lesen:;date of last reading:
+26; date of last writing:;Letzte Speicherung:;date of last writing:
+1; memory size:;Speichergröße:;memory size:
+28; number of lists:;Anzahl Listen:;number of lists:
+17; number of variables:;Anzahl Variablen:;number of variables:
+19; number of vars not read/found:;nicht gelesene Variablen:;number of vars not read/found:
+18; number of vars successfully read:;erfolgreich gelesene Variablen:;number of vars successfully read:
+22; number of writing cycles:;Anzahl Schreibaktionen:;number of writing cycles:
+20; time for reading:;benötigte Zeit für letztes Lesen:;time for reading:
+21; time for writing:;benötigte Zeit für letztes Speichern:;time for writing:
+14;%s;%s;%s
+661;Log writing time;Log benötigte Zeit zum Schreiben;Log writing time

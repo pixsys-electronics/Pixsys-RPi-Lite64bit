@@ -44,6 +44,10 @@ actions:
     command: rm etc/ld.so.preload
 
   - action: overlay
+    description: Custom Kernel
+    source: overlays/kernel
+
+  - action: overlay
     description: WP830 device specific file
     source: overlays/wp830
 

@@ -1,0 +1,16 @@
+Id;Default;DE;EN
+ASCIIFileStorage_Description;Module that can store and restore data items to/from an ASCII file;Modul, das Datenobjekte in eine ASCII Datei schreibt bzw. daraus liest.;Module that can store and restore data items to/from an ASCII file
+NAME_xDoubleStorage;xDoubleStorage;xDoubleStorage;xDoubleStorage
+DESC_xDoubleStorage;TRUE: use two files for storing the data$; one serves as backup;TRUE: verwende zwei Dateien für die Datenspeicherung, wobei eine davon als Sicherungskopie fungiert;TRUE: use two files for storing the data$$$; one serves as backup
+DESC_bySeparator;ASCII value of separator;ASCII-Wert des Trennzeichens;ASCII value of separator
+NAME_bySeparator;bySeparator;bySeparator;bySeparator
+NAME_sArchive;sArchiveName;sArchiveName;sArchiveName
+DESC_sArchive;base name of the archive;erster Teil des Dateinamens;base name of the archive
+BinaryFileStorage_Description;Module that can store and restore data items to/from an binary file;Modul, das Datenobjekte in eine Binär-Datei schreibt bzw. daraus liest.;Module that can store and restore data items to/from an binary file
+BinaryMemoryStorage_Description;Module that can store and restore data items to/from binary memory which is delcared as RETAIN;Modul, das Datenobjekte in Binär-Speicher schreibt bzw. daraus liest, wobei der Speicher mit dem Schlüsselwort RETAIN angelegt wurde;Module that can store and restore data items to/from binary memory which is delcared as RETAIN
+Name_udiMemDataSize;udiMemDataSize;udiMemDataSize;udiMemDataSize
+Desc_udiMemDataSize;Size of the memory which is declared for this storage module;Größe des Speichers der für dieses Modul zur Speicherung angelegt wird;Size of the memory which is declared for this storage module
+NAME_udiMaximumFileSize;udiMaximumFileSize;udiMaximumFileSize;udiMaximumFileSize
+DESC_udiMaximumFileSize;The maximum size of the file written in bytes$; if 0 is specified, no file limit is given or checked, so that the file can get arbitrary big.;Die maximale Dateigröße der gespeicherten Datei in Byte$; falls dieser Parameter den Wert 0 besitzt, wird kein Dateilimit überprüft oder vorgegeben, so dass die Datei beliebig groß werden kann.;The maximum size of the file written in bytes$; if 0 is specified, no file limit is given or checked, so that the file can get arbitrary big.
+PersistentBinaryMemoryStorage_Description;Module that can store and restore data items to/from binary memory which is declared as PERSISTENT;Modul, das Datenobjekte in Binär-Speicher schreibt bzw. daraus liest, wobei der Speicher mit dem Schlüsselwort PERSISTENT angelegt wurde;Module that can store and restore data items to/from binary memory which is declared as PERSISTENT
+;;;
