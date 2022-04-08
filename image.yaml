@@ -11,30 +11,43 @@
 
 architecture: {{ $arch }}
 
- # Scaricare nella root del progetto uno dei due Filesystem:
- #   https://downloads.raspberrypi.org/raspios_armhf/root.tar.xz
- #   https://downloads.raspberrypi.org/raspios_full_armhf/root.tar.xz
+ # Per creare il sistema a partire da una immagine più recente di quella
+ # inclusa nel repository procere come segue.
  #
- # Scaricare nella root del progetto uno dei due boot
- # https://downloads.raspberrypi.org/raspios_armhf/boot.tar.xz
- # https://downloads.raspberrypi.org/raspios_full_armhf/boot.tar.xz
-
+ # Scaricare nella root del progetto questi due File per un sistema minimale:
+ #   https://downloads.raspberrypi.org/raspios_armhf/root.tar.xz
+ #   https://downloads.raspberrypi.org/raspios_armhf/boot.tar.xz
+ #
+ # Scaricare nella root del progetto questi due file per un sistema full:
+ #   https://downloads.raspberrypi.org/raspios_full_armhf/root.tar.xz
+ #   https://downloads.raspberrypi.org/raspios_full_armhf/boot.tar.xz
+ #
 
 actions:
-# Action da eseguire se si vuole anche scaricare il file root.tar.xz dal web
-#  - action: download
-#    url: https://downloads.raspberrypi.org/raspios_armhf/root.tar.xz
-#    #url: https://downloads.raspberrypi.org/raspios_full_armhf/root.tar.xz
-#    name: root
-#
-#  - action: unpack
-#    origin: root
-#    compression: xz
-
-# Action da usare se il file root.tar.xz è già nella root del progetto.
   - action: unpack
     file: root.tar.xz
     compression: xz
+
+  - action: overlay
+    description: Copy boot.tar.xz
+    source: overlays/boot
+  
+#  - action: unpack
+#    file: boot.tar.xz
+#    origin: boot
+#    compression: xz
+
+  - action: run
+    description: Extract boot.tar.xz
+    chroot: true
+    command: tar -xvf boot/boot.tar.xz -C boot/
+
+  - action: run
+    description: Remove boot.tar.xz
+    chroot: true
+    command: rm boot/boot.tar.xz
+
+
 
 #  - action: download
 #    url: https://downloads.raspberrypi.org/raspios_armhf/boot.tar.xz
@@ -43,13 +56,14 @@ actions:
 #    unpack: true
 #    compression: xz
 
-  - action: unpack
-    file: boot.tar.xz
-    compression: xz
+#  - action: unpack
+#    file: boot.tar.xz
+#    origin: boot
+#    compression: xz
 
-  - action: overlay
-    origin: boot
-    destination: /boot
+#  - action: overlay
+#    origin: boot
+#    destination: /boot
 
   - action: run
     description: Remove ld.so.preload
@@ -80,10 +94,12 @@ actions:
     description: add authorized_keys for root
     source: overlays/authorized_keys
 
-  - action: run
-    description: create pixsys user
-    chroot: true
-    script: scripts/pixsys.sh
+#  La nuova immagine rasperry obbliga già la creazione di un utente.
+#  - action: run
+#    description: create pixsys user
+#    chroot: true
+#    script: scripts/pixsys.sh
+
 
   - action: overlay
     description: add pixsys portal
@@ -117,6 +133,7 @@ actions:
     chroot: true
     script: scripts/codesys.sh
 
+#  La nuova immagine rasperry obbliga già la selezione del TimeZone.
 #  - action: run
 #    description: set timezone
 #    chroot: true
@@ -140,7 +157,7 @@ actions:
   - action: image-partition
     description: create a partitioned image
     imagename: {{ $image }}
-    imagesize: 10GB
+    imagesize: 8GB
     partitiontype: msdos
     mountpoints:
       - mountpoint: /boot
@@ -161,10 +178,10 @@ actions:
       - name: root
         fs: ext4
         start: 257M
-        end: 8500M
+        end: 7500M
       - name: data
         fs: ext4
-        start: 8501M
+        start: 7501M
         end: 100%
 
   - action: run
@@ -185,4 +202,10 @@ actions:
     description: compress the image
     postprocess: true
     command: xz -T 0 -f {{ $image }}
+
+
+
+# xzcat wp830-1ad.img.xz > wp830-1ad.img
+# guestmount -a wp830-1ad.img -m /dev/sda2 -m /dev/sda1:/boot mnt/
+# sudo guestunmount mnt/ 
 
