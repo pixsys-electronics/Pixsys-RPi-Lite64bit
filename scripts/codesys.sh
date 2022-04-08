@@ -32,13 +32,13 @@ apt clean
 # disabilita il servizio (sulla eMMC viene attivato in /etc/rc.firstboot)
 #systemctl disable codesyscontrol.service
 
-# configurazione CodeSys
-perl -i -pe 's/^(Command.0=shutdown)$/$1\nCommand=AllowAll/' /etc/CODESYSControl.cfg
-
-# usa le seriali con nome ttyCOM*
-cat >> /etc/CODESYSControl_User.cfg <<EOF
-
-[SysCom]
-Linux.Devicefile=/dev/ttyCOM
-portnum := COM.SysCom.SYSCOMPORT1;
-EOF
+# # configurazione CodeSys
+# perl -i -pe 's/^(Command.0=shutdown)$/$1\nCommand=AllowAll/' /etc/CODESYSControl.cfg
+#
+# # usa le seriali con nome ttyCOM*
+# cat >> /etc/CODESYSControl_User.cfg <<EOF
+#
+# [SysCom]
+# Linux.Devicefile=/dev/ttyCOM
+# portnum := COM.SysCom.SYSCOMPORT1;
+# EOF

@@ -1,0 +1,47 @@
+;raspberry
+[SysFile]
+FilePath.1=/etc/, 3S.dat
+;For this device PlcLogicPrefix is set to 0 by default at compile time
+;If not boot application is available PlcLogicPrefix=1 will be written to CODESYSControl_User.cfg
+;PlcLogicPrefix=0
+
+[SysTarget]
+TargetVersionMask=0
+TargetVersionCompatibilityMask=0xFFFF0000
+
+[CmpLog]
+Logger.0.Name=/tmp/codesyscontrol.log
+Logger.0.Filter=0x0000000F
+Logger.0.Enable=1
+Logger.0.MaxEntries=1000
+Logger.0.MaxFileSize=1000000
+Logger.0.MaxFiles=1
+Logger.0.Backend.0.ClassId=0x00000104 ;writes logger messages in a file
+Logger.0.Type=0x314 ;Set the timestamp to RTC
+
+[CmpSettings]
+IsWriteProtected=1
+FileReference.0=SysFileMap.cfg, SysFileMap
+FileReference.1=/etc/CODESYSControl_User.cfg
+
+[SysExcept]
+Linux.DisableFpuOverflowException=1
+Linux.DisableFpuUnderflowException=1
+Linux.DisableFpuInvalidOperationException=1
+
+[CmpWebServer]
+ConnectionType=0
+
+[CmpOpenSSL]
+WebServer.Cert=server.cer
+WebServer.PrivateKey=server.key
+WebServer.CipherList=HIGH
+
+[SysEthernet]
+Linux.ProtocolFilter=3
+
+[CmpSchedule]
+ProcessorLoad.Enable=1
+ProcessorLoad.Maximum=95
+ProcessorLoad.Interval=5000
+DisableOmittedCycleWatchdog=1

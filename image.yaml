@@ -47,6 +47,11 @@ actions:
     chroot: true
     command: rm boot/boot.tar.xz
 
+  - action: run
+    description: enable SSH login
+    chroot: true
+    command: touch boot/ssh
+
 
 
 #  - action: download
@@ -121,7 +126,7 @@ actions:
 
   - action: overlay
     description: copy runtime deb package
-    source: overlays/codesys
+    source: overlays/codesys_PreInstall
 
  # - action: run
  #   description: create plc user
@@ -132,6 +137,10 @@ actions:
     description: prepare image for running CodeSys
     chroot: true
     script: scripts/codesys.sh
+
+  - action: overlay
+    description: Configure Codesys after install.
+    source: overlays/codesys_PostInstall
 
 #  La nuova immagine rasperry obbliga già la selezione del TimeZone.
 #  - action: run
@@ -152,6 +161,17 @@ actions:
 #  - action: pack
 #    file: {{ $update }}
 #    compression: gz
+
+
+  - action: run
+    description: Create MTD mount point folder
+    chroot: true
+    command: mkdir /mtd
+
+  - action: run
+    description: Appena an entry for mtd device in fstab
+    chroot: true
+    command: echo "/dev/mtdblock0    /mtd   vfat  sync 0 0" >> etc/fstab
 
 
   - action: image-partition
