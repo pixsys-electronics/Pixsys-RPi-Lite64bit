@@ -11,6 +11,15 @@
 
 architecture: {{ $arch }}
 
+ # Scaricare nella root del progetto uno dei due Filesystem:
+ #   https://downloads.raspberrypi.org/raspios_armhf/root.tar.xz
+ #   https://downloads.raspberrypi.org/raspios_full_armhf/root.tar.xz
+ #
+ # Scaricare nella root del progetto uno dei due boot
+ # https://downloads.raspberrypi.org/raspios_armhf/boot.tar.xz
+ # https://downloads.raspberrypi.org/raspios_full_armhf/boot.tar.xz
+
+
 actions:
 # Action da eseguire se si vuole anche scaricare il file root.tar.xz dal web
 #  - action: download
@@ -27,11 +36,15 @@ actions:
     file: root.tar.xz
     compression: xz
 
-  - action: download
-    url: https://downloads.raspberrypi.org/raspios_armhf/boot.tar.xz
-    #url: https://downloads.raspberrypi.org/raspios_full_armhf/boot.tar.xz
-    name: boot
-    unpack: true
+#  - action: download
+#    url: https://downloads.raspberrypi.org/raspios_armhf/boot.tar.xz
+#    #url: https://downloads.raspberrypi.org/raspios_full_armhf/boot.tar.xz
+#    name: boot
+#    unpack: true
+#    compression: xz
+
+  - action: unpack
+    file: boot.tar.xz
     compression: xz
 
   - action: overlay
