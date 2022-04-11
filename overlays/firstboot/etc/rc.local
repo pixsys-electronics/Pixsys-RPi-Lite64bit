@@ -1,6 +1,13 @@
-#!/bin/bash -e
+#!/bin/sh -e
 
 if [ -f /etc/rc.firstboot ]; then
     /etc/rc.firstboot
     mv /etc/rc.firstboot /etc/rc.firstboot.done
 fi
+
+sleep 1
+echo 100 > /sys/class/backlight/pwm_backlight/brightness
+echo 0 > /sys/class/backlight/pwm_backlight/bl_power
+sleep 1
+echo $(date) > /etc/test.dat
+

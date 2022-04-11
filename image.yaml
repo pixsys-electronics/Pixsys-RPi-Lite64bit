@@ -1,5 +1,5 @@
 {{- $arch     := or .arch     "armhf" -}}
-{{- $suite    := or .suite    "raspios_armhf" -}}
+{{- $suite    := or .suite    "bullseye" -}}
 {{- $board    := or .board    "rmb200" -}}
 {{- $flavour  := or .flavour  "WP830-1AD" -}}
 {{- $kernel   := or .kernel   "5.15.30-v7l-wp830-g1fe617a917ea" -}}
@@ -32,11 +32,6 @@ actions:
     description: Copy boot.tar.xz
     source: overlays/boot
   
-#  - action: unpack
-#    file: boot.tar.xz
-#    origin: boot
-#    compression: xz
-
   - action: run
     description: Extract boot.tar.xz
     chroot: true
@@ -52,28 +47,38 @@ actions:
     chroot: true
     command: touch boot/ssh
 
-
-
-#  - action: download
-#    url: https://downloads.raspberrypi.org/raspios_armhf/boot.tar.xz
-#    #url: https://downloads.raspberrypi.org/raspios_full_armhf/boot.tar.xz
-#    name: boot
-#    unpack: true
-#    compression: xz
-
-#  - action: unpack
-#    file: boot.tar.xz
-#    origin: boot
-#    compression: xz
-
-#  - action: overlay
-#    origin: boot
-#    destination: /boot
-
   - action: run
     description: Remove ld.so.preload
     chroot: true
     command: rm etc/ld.so.preload
+
+#  - action: run
+#    label: backports
+#    description: add Debian backports
+#    chroot: true
+#    command: echo "deb http://cdn.debian.net/debian/ {{ $suite }}-backports main contrib non-free" > /etc/apt/sources.list.d/backports.list && apt update
+
+  - action: apt
+    description: add extra packages
+    packages: [
+         cockpit, cockpit-networkmanager, cockpit-storaged, cockpit-system, cockpit-ws,
+         mc, redis, ca-certificates, jq, crudini, cloud-guest-utils, screen
+   ]
+
+#    packages: [
+#        kmod, sudo, adduser, systemd-sysv, udev, dnsutils, ifupdown, iproute2, iputils-ping, udhcpc, netbase, net-tools, ethtool, openssh-server,
+#        lsb-release, locales, dialog, file, usbutils, nano, less, tree, screen, rsync, curl, wget, zip, unzip, cloud-guest-utils, iptables,
+#        u-boot-tools, device-tree-compiler, bsdmainutils, hexer, lrzsz, resolvconf, redis, python3-redis, python3-pyinotify, bash-completion, htop, mc, ncdu,
+#        mmc-utils, f2fs-tools, dbus, lsof, firmware-linux-nonfree/{{ $suite }}-backports, firmware-misc-nonfree/{{ $suite }}-backports,
+#        firmware-linux-free, openssl, ca-certificates, jq, crudini, nmap, psmisc, hostapd, dnsmasq, wireless-tools,
+#        cockpit, cockpit-networkmanager, cockpit-storaged, cockpit-system, cockpit-ws
+#    ]
+
+
+  - action: run
+    description: cleanup packages after install
+    chroot: true
+    command: apt clean
 
   - action: overlay
     description: Custom Kernel
