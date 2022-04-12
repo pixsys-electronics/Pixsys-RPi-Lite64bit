@@ -94,20 +94,23 @@ dtoverlay=i2c-rtc,pcf8563,i2c_csi_dsi
 #      pn/np - No pull
 
 
-# BACKLIGHT PWM
-#gpio=18=op,dh
-# BACKLIGHT EN
-#gpio=26=op,dh	
-#gpio=26=op,pd,dl
-#dtoverlay=hdmi-backlight-hwhack-gpio,gpio_pin=26,active_low=0
+# BACKLIGHT & BUZZER PWM SETUP
+
+# This defaults to GPIO_18 as the pin for PWM0 and GPIO_19 as the pin for PWM1
+# https://pypi.org/project/rpi-hardware-pwm/
+dtoverlay=pwm-2chan,clock=5000000
+
 
 # Backlight al 15% :
-# echo 15 > /sys/class/backlight/pwm_backlight/brightness
+# 	echo 15 > /sys/class/backlight/pwm_backlight/brightness
+#
 # SPEGNE:
-# echo 1 > /sys/class/backlight/pwm_backlight/bl_power
+# 	echo 1 > /sys/class/backlight/pwm_backlight/bl_power
+#
 # ACCENDE:
-# echo 0 > /sys/class/backlight/pwm_backlight/bl_power
-dtoverlay pwm,pin=18,func=2,clock=5000000
+# 	echo 0 > /sys/class/backlight/pwm_backlight/bl_power
+#
+# dtoverlay pwm,pin=18,func=2,clock=5000000
 dtoverlay pwm_backlight
 
 # UPS ENABLE
@@ -143,3 +146,4 @@ otg_mode=1
 #Run as fast as firmware / board allows
 arm_boost=1
 [all]
+

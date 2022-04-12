@@ -62,7 +62,7 @@ actions:
     description: add extra packages
     packages: [
          cockpit, cockpit-networkmanager, cockpit-storaged, cockpit-system, cockpit-ws,
-         mc, redis, ca-certificates, jq, crudini, cloud-guest-utils, screen
+         mc, redis, ca-certificates, jq, crudini, cloud-guest-utils, screen, 
    ]
 
 #    packages: [
@@ -118,6 +118,13 @@ actions:
 #  - action: overlay
 #    description: configuration for wifi hotspot
 #    source: overlays/hostapd
+
+
+
+  - action: run
+    description: Install PIP library for Hardware PWM
+    chroot: true
+    command: pip3 install rpi-hardware-pwm
 
   - action: run
     description: set hostname

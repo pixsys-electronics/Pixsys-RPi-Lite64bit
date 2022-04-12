@@ -10,4 +10,4 @@ echo 100 > /sys/class/backlight/pwm_backlight/brightness
 echo 0 > /sys/class/backlight/pwm_backlight/bl_power
 sleep 1
 echo $(date) > /etc/test.dat
-
+python /boot/buzzer.py
