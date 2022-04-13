@@ -115,6 +115,8 @@ dtoverlay pwm_backlight
 
 # UPS ENABLE
 gpio=24=op,dh
+dtoverlay=gpio-shutdown,gpio_pin=23,active_low=1,gpio_pull=off,debounce=10
+
 # LED
 #dtoverlay=gpio-led,gpio=21,trigger=heartbeat
 dtoverlay=gpio-led,gpio=21,trigger=mmc
