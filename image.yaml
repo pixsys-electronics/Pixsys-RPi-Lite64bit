@@ -2,11 +2,11 @@
 {{- $suite    := or .suite    "bullseye" -}}
 {{- $board    := or .board    "rmb200" -}}
 {{- $flavour  := or .flavour  "WP830-1AD" -}}
-{{- $kernel   := or .kernel   "5.15.30-v7l-wp830-g1fe617a917ea" -}}
+{{- $kernel   := or .kernel   "5.15.32-pixsys-v7l+" -}}
 {{- $timezone := or .timezone "Europe/Rome" -}}
 {{- $commit   := or .commit   "devel" -}}
 {{- $archive  := or .archive  (printf "debian-%s-%s.tgz" $suite $arch) -}}
-{{- $image    := or .image    "wp830-1ad.img" -}}
+{{- $image    := or .image    (printf "%s_Rev.%s_%s.img" $flavour $commit $kernel) -}}
 {{- $update   := or .update   (printf "%s_Update_Rev.%s_%s.tgz" $flavour $commit $kernel) -}}
 
 architecture: {{ $arch }}
