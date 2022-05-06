@@ -44,7 +44,7 @@ max_framebuffers=2
 
 	#Opzione usando file EDID, il file deve essere in /boot
 	hdmi_edid_file=1
-	hdmi_edid_filename=1366x768.bin
+	hdmi_edid_filename=pixsys.bin
 [all]
 
 # Automatically load overlays for detected DSI displays
